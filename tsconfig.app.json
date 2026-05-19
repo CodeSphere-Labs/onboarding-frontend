@@ -11,6 +11,10 @@
     "moduleResolution": "bundler",
     "types": ["vite/client"],
     "allowImportingTsExtensions": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@api": ["./generated/api/index.ts"]
+    },
 
     "noFallthroughCasesInSwitch": true,
     /* Linting */
@@ -21,5 +25,6 @@
     "erasableSyntaxOnly": true,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["generated/**"]
 }

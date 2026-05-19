@@ -1,0 +1,26 @@
+.card {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 5px;
+
+  min-width: 0;
+}
+
+.card :global(.mantine-Avatar-root) {
+  flex-shrink: 0;
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  min-width: 0;
+}
+
+.userName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,7 +1,9 @@
-import { Button } from '@mantine/core';
+import { reatomComponent } from '@reatom/react';
 
-export const App = () => (
-  <>
-    <Button>123</Button>
-  </>
-);
+import { rootRoute } from './routes';
+
+export const App = reatomComponent(() => {
+  const route = rootRoute.render();
+
+  return <>{route}</>;
+}, 'App');

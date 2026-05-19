@@ -1,0 +1,23 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  min-height: 100vh;
+
+  padding-top: var(--mantine-spacing-xl);
+  padding-bottom: var(--mantine-spacing-xl);
+}
+
+.title {
+  font-family: Outfit, var(--mantine-font-family);
+  font-weight: 500;
+}
+
+.subtitle {
+  margin-top: 5px;
+
+  font-size: var(--mantine-font-size-sm);
+  text-align: center;
+  color: var(--mantine-color-dimmed);
+}

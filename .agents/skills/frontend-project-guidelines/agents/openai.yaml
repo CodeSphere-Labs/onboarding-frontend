@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Project Guidelines"
+  short_description: "React, CSS Modules, and shared component conventions for this frontend"
+  default_prompt: "Follow this frontend project's React, CSS Modules, and shared component conventions."

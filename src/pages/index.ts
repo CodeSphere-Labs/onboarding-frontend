@@ -1,0 +1,12 @@
+export { Candidates } from './Candidates/Candidates';
+export { Dashboard } from './Dashboard/Dashboard';
+export { Employees } from './Employees/Employees';
+export { Feedback } from './Feedback/Feedback';
+export { Goals } from './Goals/Goals';
+export { Login } from './Login/Login';
+export { Onboardings } from './Onboardings/Onboardings';
+export { Plan } from './Plan/Plan';
+export { Settings } from './Settings/Settings';
+export { Templates } from './Templates/Templates';
+export { Users } from './Users/Users';
+export { WelcomePackage } from './WelcomePackage/WelcomePackage';
