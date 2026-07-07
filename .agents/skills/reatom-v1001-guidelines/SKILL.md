@@ -22,9 +22,7 @@ Use these rules when implementing or reviewing Reatom code in this repo.
 Use `computed(async () => ...)` extended by `withAsyncData()` by default for idempotent reads/query data:
 
 ```ts
-const list = computed(async () => {
-  return await wrap(api.getList({ page: page() }));
-}, 'list').extend(withAsyncData({ initState: [] }));
+const list = computed(async () => await wrap(api.getList({ page: page() })), 'list').extend(withAsyncData({ initState: [] }));
 ```
 
 `withAsyncData` adds `data()`, `ready()`, `error()`, `status()`, `retry()`, and `reset()`. It also uses abort behavior to prevent races.
@@ -32,9 +30,7 @@ const list = computed(async () => {
 Use `action(async () => ...)` extended by `withAsync()` for mutations and commands:
 
 ```ts
-const submit = action(async (payload: FormValues) => {
-  return await wrap(api.submit(payload));
-}, 'form.submit').extend(withAsync());
+const submit = action(async (payload: FormValues) => await wrap(api.submit(payload)), 'form.submit').extend(withAsync());
 ```
 
 ## Wrap Rules
