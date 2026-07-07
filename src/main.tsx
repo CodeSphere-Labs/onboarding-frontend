@@ -7,6 +7,7 @@ import { createRoot } from 'react-dom/client';
 
 import { App } from './app/App.tsx';
 import { router } from './app/router';
+import { theme } from './app/theme.ts';
 import { user } from './app/user.model.ts';
 
 import './app/reatomLogger';
@@ -25,7 +26,7 @@ const init = async () => {
   }
 
   createRoot(document.getElementById('root')!).render(
-    <MantineProvider defaultColorScheme='auto'>
+    <MantineProvider defaultColorScheme='auto' theme={theme}>
       <ModalsProvider>
         <Notifications position='top-right' />
         <App />

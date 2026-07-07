@@ -1,12 +1,12 @@
-import { Button, Group } from '@mantine/core';
+import { ActionIcon, Button, Group } from '@mantine/core';
 import { reatomComponent } from '@reatom/react';
-import { IconLogout } from '@tabler/icons-react';
+import { IconLogout, IconSettings } from '@tabler/icons-react';
 
 import { logout } from '@/app/user.model';
 
 import type { NavigationRoutes } from './components';
 
-import { NavigationLinks, ThemeToggle, UserInfo } from './components';
+import { Header, NavigationLinks, UserInfo } from './components';
 
 import classes from './mainLayout.module.css';
 
@@ -17,23 +17,42 @@ interface Props {
 
 export const MainLayout = reatomComponent<Props>(
   ({ children, navigationRoutes }) => (
-    <main className={classes.main}>
-      <nav className={classes.navbar}>
-        <div className={classes.navbarMain}>
-          <Group className={classes.header} justify='space-between'>
-            <UserInfo />
-            <ThemeToggle />
-          </Group>
+    <div className={classes.app}>
+      <nav className={classes.sidebar}>
+        <div className={classes.logo}>
+          <div className={classes.logoMark}>O</div>
+          <div className={classes.logoText}>
+            Onboard<span>Pro</span>
+          </div>
+        </div>
+
+        <div className={classes.section}>
+          <div className={classes.sectionLabel}>Навигация</div>
           <NavigationLinks routes={navigationRoutes} />
         </div>
 
         <div className={classes.footer}>
+          <Group gap='xs' wrap='nowrap'>
+            <UserInfo />
+            <ActionIcon
+              aria-label='Настройки'
+              color='gray'
+              variant='subtle'
+              onClick={() => navigationRoutes.settings.go()}
+            >
+              <IconSettings size={18} stroke={1.5} />
+            </ActionIcon>
+          </Group>
+
           <Button
             fullWidth
+            color='gray'
             justify='start'
-            leftSection={<IconLogout className={classes.footerLinkIcon} stroke={1.5} />}
+            leftSection={<IconLogout size={18} stroke={1.5} />}
             loading={!!logout.pending()}
-            variant='transparent'
+            mt='xs'
+            size='sm'
+            variant='subtle'
             onClick={() => logout()}
           >
             Выйти
@@ -41,8 +60,11 @@ export const MainLayout = reatomComponent<Props>(
         </div>
       </nav>
 
-      {children}
-    </main>
+      <div className={classes.main}>
+        <Header routes={navigationRoutes} />
+        <div className={classes.content}>{children}</div>
+      </div>
+    </div>
   ),
   'MainLayout'
 );
