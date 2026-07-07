@@ -1,9 +1,9 @@
 ---
-name: reatom-v1000-guidelines
-description: Project-specific Reatom v1000 conventions for atoms, computed values, actions, async data, forms, routing, React bindings, and undefined initial state. Use when editing or reviewing Reatom code in this frontend repo, including @reatom/core, @reatom/react, reatomComponent, reatomRoute, reatomForm, withAsyncData, withAsync, wrap, effects, and atomized models.
+name: reatom-v1001-guidelines
+description: Project-specific Reatom v1001 conventions for atoms, computed values, actions, async data, forms, routing, React bindings, and undefined initial state. Use when editing or reviewing Reatom code in this frontend repo, including @reatom/core, @reatom/react, reatomComponent, reatomRoute, reatomForm, withAsyncData, withAsync, wrap, effects, and atomized models.
 ---
 
-# Reatom v1000 Guidelines
+# Reatom v1001 Guidelines
 
 Use these rules when implementing or reviewing Reatom code in this repo.
 
