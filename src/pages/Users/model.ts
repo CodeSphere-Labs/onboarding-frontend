@@ -10,6 +10,7 @@ import {
 } from '@api';
 import { notifications } from '@mantine/notifications';
 import {
+  abortVar,
   action,
   atom,
   computed,
@@ -49,7 +50,7 @@ export const page = atom(1, 'users.page');
 export const sortBy = atom<UsersSortBy>('lastName', 'users.sortBy');
 export const sortOrder = atom<'asc' | 'desc'>('asc', 'users.sortOrder');
 
-export const toggleSort = (nextSortBy: UsersSortBy) => {
+export const toggleSort = action((nextSortBy: UsersSortBy) => {
   if (sortBy() === nextSortBy) {
     sortOrder.set((order) => (order === 'asc' ? 'desc' : 'asc'));
   } else {
@@ -57,7 +58,7 @@ export const toggleSort = (nextSortBy: UsersSortBy) => {
     sortOrder.set('asc');
   }
   page.set(1);
-};
+}, 'users.toggleSort');
 
 // ── Список пользователей ──────────────────────────────────────────────────
 
@@ -75,10 +76,13 @@ export const usersList = computed(async () => {
     ...(departmentFilter() !== 'all' && { departmentId: departmentFilter() })
   };
 
-  // withAsyncData абортит предыдущий запуск при смене параметров — пауза даёт дебаунс ввода
+  // withAsyncData абортит предыдущий запуск при смене параметров — пауза даёт дебаунс ввода,
+  // а сигнал отменяет и сам HTTP-запрос устаревшего запуска
   await wrap(sleep(250));
 
-  const response = await wrap(getApiUsers({ query }));
+  const response = await wrap(
+    getApiUsers({ query, config: { signal: abortVar.require().signal } })
+  );
 
   return response.data;
 }, 'users.list').extend(withAsyncData());
