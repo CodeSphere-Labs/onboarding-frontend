@@ -1,2 +1,2 @@
-export { createRoleRoute } from './createRoleRoute';
-export type { UserRole } from './createRoleRoute';
+export { createRoleGuard } from './createRoleGuard';
+export type { UserRole } from './createRoleGuard';

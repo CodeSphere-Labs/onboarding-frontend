@@ -4,14 +4,18 @@ import { reatomComponent } from '@reatom/react';
 import {
   IconChecklist,
   IconFiles,
+  IconGift,
   IconLayoutDashboard,
   IconListCheck,
   IconMessageReply,
   IconSettings,
-  IconStar,
   IconTargetArrow,
   IconUsers
 } from '@tabler/icons-react';
+
+import type { UserRole } from '@/shared/components';
+
+import { user } from '@/app/user.model';
 
 import classes from './navigationLinks.module.css';
 
@@ -38,44 +42,62 @@ export interface NavigationRoutes {
 interface NavigationLink {
   icon: Icon;
   label: string;
+  /** Не указано — пункт виден всем ролям */
+  roles?: readonly UserRole[];
   route: NavigationRoute;
 }
 
-export const NavigationLinks = reatomComponent(
-  ({ routes }: { routes: NavigationRoutes }) => {
-    const links: NavigationLink[] = [
-      { route: routes.dashboard, label: 'Дашборд', icon: IconLayoutDashboard },
-      { route: routes.onboardings, label: 'Онбординги', icon: IconListCheck },
-      { route: routes.templates, label: 'Шаблоны', icon: IconFiles },
-      { route: routes.goals, label: 'Цели', icon: IconTargetArrow },
-      { route: routes.plan, label: 'План', icon: IconChecklist },
-      { route: routes.feedback, label: 'Фидбек', icon: IconMessageReply },
-      { route: routes.users, label: 'Пользователи', icon: IconUsers },
-      { route: routes.candidates, label: 'Кандидаты', icon: IconUsers },
-      { route: routes.employees, label: 'Сотрудники', icon: IconUsers },
-      { route: routes.welcomePackage, label: 'Welcome-пакет', icon: IconStar },
-      { route: routes.settings, label: 'Настройки', icon: IconSettings }
-    ];
+export const NavigationLinks = reatomComponent(({ routes }: { routes: NavigationRoutes }) => {
+  const role = user()?.role;
 
-    return (
-      <>
-        {links.map((item) => (
-          <a
-            key={item.label}
-            className={classes.link}
-            data-active={item.route.exact() || undefined}
-            href={item.route.path()}
-            onClick={(event) => {
-              event.preventDefault();
-              item.route.go();
-            }}
-          >
-            <item.icon className={classes.linkIcon} stroke={1.5} />
-            <span>{item.label}</span>
-          </a>
-        ))}
-      </>
-    );
-  },
-  'NavigationLinks'
-);
+  const links: NavigationLink[] = [
+    { route: routes.dashboard, label: 'Дашборд', icon: IconLayoutDashboard },
+    { route: routes.onboardings, label: 'Онбординги', icon: IconListCheck, roles: ['hr'] },
+    { route: routes.templates, label: 'Шаблоны', icon: IconFiles, roles: ['hr'] },
+    { route: routes.users, label: 'Пользователи', icon: IconUsers, roles: ['hr'] },
+    { route: routes.employees, label: 'Мои сотрудники', icon: IconUsers, roles: ['manager'] },
+    { route: routes.candidates, label: 'Мои кандидаты', icon: IconUsers, roles: ['recruiter'] },
+    {
+      route: routes.plan,
+      label: 'План',
+      icon: IconChecklist,
+      roles: ['hr', 'manager', 'employee']
+    },
+    {
+      route: routes.goals,
+      label: 'Цели',
+      icon: IconTargetArrow,
+      roles: ['hr', 'manager', 'employee']
+    },
+    { route: routes.feedback, label: 'Фидбек', icon: IconMessageReply },
+    {
+      route: routes.welcomePackage,
+      label: 'Welcome-пакет',
+      icon: IconGift,
+      roles: ['employee', 'hr']
+    },
+    { route: routes.settings, label: 'Настройки', icon: IconSettings }
+  ];
+
+  const visibleLinks = links.filter((link) => !link.roles || (role && link.roles.includes(role)));
+
+  return (
+    <>
+      {visibleLinks.map((item) => (
+        <a
+          key={item.label}
+          className={classes.link}
+          data-active={item.route.exact() || undefined}
+          href={item.route.path()}
+          onClick={(event) => {
+            event.preventDefault();
+            item.route.go();
+          }}
+        >
+          <item.icon className={classes.linkIcon} stroke={1.5} />
+          <span>{item.label}</span>
+        </a>
+      ))}
+    </>
+  );
+}, 'NavigationLinks');

@@ -14,14 +14,14 @@ Apply these conventions when changing this repository.
 - Import CSS modules as `classes`:
 
 ```tsx
-import classes from './mainLayout.module.css';
+
 ```
 
 - Put reusable UI in `src/shared/components/<ComponentName>/<ComponentName>.tsx`.
 - Export shared components from `src/shared/components/index.ts` for short imports:
 
 ```tsx
-import { UserRoleBadge } from '@/shared/components';
+
 ```
 
 - Do not add `index.ts` files inside each individual component folder unless the project convention changes.

@@ -1,0 +1,4 @@
+interface:
+  display_name: Reatom v1001 Guidelines
+  short_description: "Project rules for Reatom state, routing, forms, and async flows"
+  default_prompt: "Follow the project's Reatom v1001 conventions."

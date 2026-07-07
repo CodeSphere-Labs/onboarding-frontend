@@ -1,23 +1,91 @@
 .root {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   justify-content: center;
 
   min-height: 100vh;
 
-  padding-top: var(--mantine-spacing-xl);
-  padding-bottom: var(--mantine-spacing-xl);
+  padding: var(--mantine-spacing-xl);
+
+  background-color: var(--mantine-color-gray-0);
+
+  @mixin dark {
+    background-color: var(--mantine-color-dark-8);
+  }
 }
 
-.title {
+.inner {
+  width: 100%;
+  max-width: 420px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.logoMark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
   font-family: Outfit, var(--mantine-font-family);
-  font-weight: 500;
+  font-size: var(--mantine-font-size-lg);
+  font-weight: 700;
+  color: var(--mantine-color-white);
+
+  background-color: var(--mantine-color-blue-6);
+
+  border-radius: 10px;
 }
 
-.subtitle {
-  margin-top: 5px;
+.logoText {
+  font-family: Outfit, var(--mantine-font-family);
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.logoAccent {
+  color: var(--mantine-color-blue-6);
+}
+
+.tagline {
+  margin-top: var(--mantine-spacing-xs);
 
   font-size: var(--mantine-font-size-sm);
+  text-align: center;
+  color: var(--mantine-color-dimmed);
+}
+
+.card {
+  margin-top: var(--mantine-spacing-xl);
+  padding: 32px;
+}
+
+.cardTitle {
+  font-weight: 700;
+}
+
+.cardSubtitle {
+  margin-top: 4px;
+
+  font-size: var(--mantine-font-size-sm);
+  color: var(--mantine-color-dimmed);
+}
+
+.hint {
+  font-size: var(--mantine-font-size-xs);
+}
+
+.footerNote {
+  margin-top: var(--mantine-spacing-md);
+
+  font-size: var(--mantine-font-size-xs);
   text-align: center;
   color: var(--mantine-color-dimmed);
 }
