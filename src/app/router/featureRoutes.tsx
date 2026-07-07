@@ -47,13 +47,13 @@ export const dashboardRoute = authenticatedRoute.reatomRoute(
   'dashboardRoute'
 );
 
-const createRoleLayoutRoute = (allowedRoles: readonly UserRole[], name: string) =>
+const reatomRoleLayoutRoute = (allowedRoles: readonly UserRole[], name: string) =>
   authenticatedRoute.reatomRoute(
     {
       params: createRoleGuard({
         allowedRoles,
         onDenied: () => {
-          router.dashboard.go();
+          router.dashboard.go(undefined, true);
         },
         parentRoute: authenticatedRoute
       }),
@@ -66,11 +66,11 @@ const createRoleLayoutRoute = (allowedRoles: readonly UserRole[], name: string) 
     name
   );
 
-const hrRoute = createRoleLayoutRoute(['hr'], 'hrRoute');
-const managerRoute = createRoleLayoutRoute(['manager'], 'managerRoute');
-const recruiterRoute = createRoleLayoutRoute(['recruiter'], 'recruiterRoute');
-const planAccessRoute = createRoleLayoutRoute(['hr', 'manager', 'employee'], 'planAccessRoute');
-const welcomePackageAccessRoute = createRoleLayoutRoute(
+const hrRoute = reatomRoleLayoutRoute(['hr'], 'hrRoute');
+const managerRoute = reatomRoleLayoutRoute(['manager'], 'managerRoute');
+const recruiterRoute = reatomRoleLayoutRoute(['recruiter'], 'recruiterRoute');
+const planAccessRoute = reatomRoleLayoutRoute(['hr', 'manager', 'employee'], 'planAccessRoute');
+const welcomePackageAccessRoute = reatomRoleLayoutRoute(
   ['employee', 'hr'],
   'welcomePackageAccessRoute'
 );

@@ -1,16 +1,11 @@
 import { postApiAuthLogin } from '@api';
 import { notifications } from '@mantine/notifications';
-import { action, computed, reatomForm, withAsync, wrap } from '@reatom/core';
+import { action, computed, reatomForm, wrap } from '@reatom/core';
 import { z } from 'zod';
 
 import { router } from '@/app/router';
 import { user } from '@/app/user.model';
 import { getApiError, getErrorCodeMessage } from '@/shared/api/errorCodes';
-
-const loginAction = action(
-  async (body: { email: string; password: string }) => await wrap(postApiAuthLogin({ body })),
-  'loginAction'
-).extend(withAsync());
 
 export const loginForm = reatomForm(
   {
@@ -25,7 +20,7 @@ export const loginForm = reatomForm(
     }),
     onSubmit: async (state) => {
       try {
-        const result = await loginAction(state);
+        const result = await wrap(postApiAuthLogin({ body: state }));
 
         user.set(result.data.user);
         router.dashboard.go();
@@ -42,15 +37,12 @@ export const loginForm = reatomForm(
   }
 );
 
-export const isLoading = computed(
-  () => !!loginAction.pending() || !!loginForm.submit.pending(),
-  'loginForm.isLoading'
-);
+export const isLoading = computed(() => !!loginForm.submit.pending(), 'loginForm.isLoading');
 
-export const showForgotPasswordHint = () => {
+export const showForgotPasswordHint = action(() => {
   notifications.show({
     title: 'Восстановление пароля',
     message: 'Обратитесь к HR-менеджеру — он выдаст новый временный пароль.',
     color: 'blue'
   });
-};
+}, 'loginForm.showForgotPasswordHint');
