@@ -1,4 +1,9 @@
-import type { CreateUserResponseDto, UpdateUserDto, UserResponseDto } from '@api';
+import type {
+  CreateUserResponseDto,
+  ResetUserPasswordResponseDto,
+  UpdateUserDto,
+  UserResponseDto
+} from '@api';
 
 import {
   getApiOrgDepartments,
@@ -6,6 +11,7 @@ import {
   getApiUsers,
   patchApiUserById,
   patchApiUserByIdDeactivate,
+  postApiUserByIdResetPassword,
   postApiUsers
 } from '@api';
 import { notifications } from '@mantine/notifications';
@@ -24,10 +30,6 @@ import {
 import { z } from 'zod';
 
 import { getApiError, getErrorCodeMessage } from '@/shared/api/errorCodes';
-
-import type { ResetUserPasswordResponseDto } from './api/postApiUserByIdResetPassword';
-
-import { postApiUserByIdResetPassword } from './api/postApiUserByIdResetPassword';
 
 export type UserRoleFilter = 'all' | UserResponseDto['role'];
 export type UserStatusFilter = 'all' | UserResponseDto['employmentStatus'];

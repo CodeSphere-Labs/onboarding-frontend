@@ -146,6 +146,22 @@ export type UpdateUserDto = {
     employmentStatus?: 'invited' | 'active' | 'inactive';
 };
 
+export type ChangeUserAssignmentDto = {
+    role?: 'hr' | 'recruiter' | 'manager' | 'employee';
+    managerId?: {
+        [key: string]: unknown;
+    } | null;
+    recruiterId?: {
+        [key: string]: unknown;
+    } | null;
+    employmentStatus?: 'invited' | 'active' | 'inactive';
+};
+
+export type ResetUserPasswordResponseDto = {
+    user: UserResponseDto;
+    temporaryPassword: string;
+};
+
 export type OnboardingTemplateTaskResponseDto = {
     id: string;
     title: string;
@@ -419,31 +435,167 @@ export type NotificationResponseDto = {
     createdAt: string;
 };
 
+export type HrDashboardSummaryDto = {
+    activeOnboardings: number;
+    completedOnTime: number;
+    overdueOnboardings: number;
+    avgPlanProgress: number;
+};
+
+export type DashboardPersonProgressItemDto = {
+    employeeId: string;
+    displayName: string;
+    role: 'hr' | 'recruiter' | 'manager' | 'employee';
+    employmentStatus: 'invited' | 'active' | 'inactive';
+    startDate: string;
+    progressPercent: number;
+    overdueTasks: number;
+};
+
+export type DashboardAlertItemDto = {
+    employeeId: string;
+    displayName: string;
+    reason: string;
+    overdueTasks: number;
+    progressPercent: number;
+};
+
+export type HrDashboardListsDto = {
+    recentOnboardings: Array<DashboardPersonProgressItemDto>;
+    attentionRequired: Array<DashboardAlertItemDto>;
+};
+
+export type DashboardActivityItemDto = {
+    type: 'task_completed' | 'feedback_added' | 'goal_added' | 'achievement_confirmed' | 'task_overdue';
+    title: string;
+    description: {
+        [key: string]: unknown;
+    } | null;
+    occurredAt: string;
+};
+
+export type DashboardChartDatumDto = {
+    label: string;
+    value: number;
+};
+
+export type HrDashboardChartsDto = {
+    onboardingStatuses: Array<DashboardChartDatumDto>;
+    progressBuckets: Array<DashboardChartDatumDto>;
+};
+
 export type HrDashboardResponseDto = {
-    totalUsers: number;
-    invitedUsers: number;
-    activePlans: number;
-    templates: number;
+    summary: HrDashboardSummaryDto;
+    lists: HrDashboardListsDto;
+    timeline: Array<DashboardActivityItemDto>;
+    charts: HrDashboardChartsDto;
+};
+
+export type RecruiterDashboardSummaryDto = {
+    myCandidatesInOnboarding: number;
+    avgCandidateProgress: number;
+    successfulOnboardingsAllTime: number;
+    feedbackPendingCount: number;
+};
+
+export type RecruiterDashboardListsDto = {
+    myCandidates: Array<DashboardPersonProgressItemDto>;
+    feedbackPending: Array<DashboardPersonProgressItemDto>;
+};
+
+export type RecruiterDashboardChartsDto = {
+    candidateStatuses: Array<DashboardChartDatumDto>;
+    progressBuckets: Array<DashboardChartDatumDto>;
 };
 
 export type RecruiterDashboardResponseDto = {
-    assignedEmployees: number;
-    invitedEmployees: number;
-    unreadNotifications: number;
+    summary: RecruiterDashboardSummaryDto;
+    lists: RecruiterDashboardListsDto;
+    timeline: Array<DashboardActivityItemDto>;
+    charts: RecruiterDashboardChartsDto;
+};
+
+export type ManagerDashboardSummaryDto = {
+    teamSize: number;
+    activePlans: number;
+    goalsInProgress: number;
+    pendingAchievementsApproval: number;
+};
+
+export type DashboardGoalItemDto = {
+    goalId: string;
+    employeeId: string;
+    employeeName: string;
+    title: string;
+    period: string;
+    status: 'in_progress' | 'completed' | 'cancelled';
+};
+
+export type ManagerDashboardListsDto = {
+    myEmployees: Array<DashboardPersonProgressItemDto>;
+    employeesGoals: Array<DashboardGoalItemDto>;
+    atRiskEmployees: Array<DashboardAlertItemDto>;
+};
+
+export type ManagerDashboardChartsDto = {
+    teamProgress: Array<DashboardChartDatumDto>;
+    goalsStatuses: Array<DashboardChartDatumDto>;
 };
 
 export type ManagerDashboardResponseDto = {
-    teamSize: number;
-    activeGoals: number;
-    pendingAchievements: number;
-    unreadNotifications: number;
+    summary: ManagerDashboardSummaryDto;
+    lists: ManagerDashboardListsDto;
+    timeline: Array<DashboardActivityItemDto>;
+    charts: ManagerDashboardChartsDto;
+};
+
+export type EmployeeDashboardSummaryDto = {
+    tasksCompleted: number;
+    totalTasks: number;
+    goalsCount: number;
+    confirmedAchievementsCount: number;
+    feedbackReceivedCount: number;
+};
+
+export type DashboardTaskItemDto = {
+    taskId: string;
+    title: string;
+    period: string;
+    status: 'not_started' | 'in_progress' | 'completed';
+    dueDate: string;
+    isOverdue: boolean;
+};
+
+export type EmployeeDashboardPlanDto = {
+    progressPercent: number;
+    completedTasks: Array<DashboardTaskItemDto>;
+    upcomingTasks: Array<DashboardTaskItemDto>;
+    overdueTasks: Array<DashboardTaskItemDto>;
+};
+
+export type DashboardFeedbackItemDto = {
+    feedbackId: string;
+    authorRole: 'hr' | 'recruiter' | 'manager' | 'employee';
+    createdAt: string;
+    strengths: string;
+    improvements: string;
+};
+
+export type EmployeeDashboardListsDto = {
+    myGoals: Array<DashboardGoalItemDto>;
+    recentFeedback: Array<DashboardFeedbackItemDto>;
+};
+
+export type EmployeeDashboardChartsDto = {
+    planProgressByStatus: Array<DashboardChartDatumDto>;
 };
 
 export type EmployeeDashboardResponseDto = {
-    hasActivePlan: boolean;
-    pendingAchievements: number;
-    unreadNotifications: number;
-    feedbackReceived: number;
+    summary: EmployeeDashboardSummaryDto;
+    plan: EmployeeDashboardPlanDto;
+    lists: EmployeeDashboardListsDto;
+    timeline: Array<DashboardActivityItemDto>;
+    charts: EmployeeDashboardChartsDto;
 };
 
 export type WelcomePackResourceResponseDto = {
@@ -815,6 +967,26 @@ export type UsersControllerUpdateResponses = {
 
 export type UsersControllerUpdateResponse = UsersControllerUpdateResponses[keyof UsersControllerUpdateResponses];
 
+export type UsersControllerChangeAssignmentData = {
+    body: ChangeUserAssignmentDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/users/{id}/assignment';
+};
+
+export type UsersControllerChangeAssignmentResponses = {
+    /**
+     * Updated user assignment
+     */
+    200: {
+        user: UserResponseDto;
+    };
+};
+
+export type UsersControllerChangeAssignmentResponse = UsersControllerChangeAssignmentResponses[keyof UsersControllerChangeAssignmentResponses];
+
 export type UsersControllerDeactivateData = {
     body?: never;
     path: {
@@ -834,6 +1006,24 @@ export type UsersControllerDeactivateResponses = {
 };
 
 export type UsersControllerDeactivateResponse = UsersControllerDeactivateResponses[keyof UsersControllerDeactivateResponses];
+
+export type UsersControllerResetPasswordData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/users/{id}/reset-password';
+};
+
+export type UsersControllerResetPasswordResponses = {
+    /**
+     * User with new one-time temporary password
+     */
+    201: ResetUserPasswordResponseDto;
+};
+
+export type UsersControllerResetPasswordResponse = UsersControllerResetPasswordResponses[keyof UsersControllerResetPasswordResponses];
 
 export type OnboardingTemplatesControllerListData = {
     body?: never;
@@ -1310,77 +1500,33 @@ export type NotificationsControllerMarkAllAsReadResponses = {
 
 export type NotificationsControllerMarkAllAsReadResponse = NotificationsControllerMarkAllAsReadResponses[keyof NotificationsControllerMarkAllAsReadResponses];
 
-export type DashboardControllerGetHrDashboardData = {
+export type DashboardControllerGetDashboardData = {
     body?: never;
     path?: never;
     query?: never;
-    url: '/api/dashboard/hr';
+    url: '/api/dashboard';
 };
 
-export type DashboardControllerGetHrDashboardResponses = {
+export type DashboardControllerGetDashboardResponses = {
     /**
-     * HR dashboard overview
+     * Role-aware dashboard for current user
      */
     200: {
+        role: 'hr';
         dashboard: HrDashboardResponseDto;
-    };
-};
-
-export type DashboardControllerGetHrDashboardResponse = DashboardControllerGetHrDashboardResponses[keyof DashboardControllerGetHrDashboardResponses];
-
-export type DashboardControllerGetRecruiterDashboardData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/dashboard/recruiter';
-};
-
-export type DashboardControllerGetRecruiterDashboardResponses = {
-    /**
-     * Recruiter dashboard overview
-     */
-    200: {
+    } | {
+        role: 'recruiter';
         dashboard: RecruiterDashboardResponseDto;
-    };
-};
-
-export type DashboardControllerGetRecruiterDashboardResponse = DashboardControllerGetRecruiterDashboardResponses[keyof DashboardControllerGetRecruiterDashboardResponses];
-
-export type DashboardControllerGetManagerDashboardData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/dashboard/manager';
-};
-
-export type DashboardControllerGetManagerDashboardResponses = {
-    /**
-     * Manager dashboard overview
-     */
-    200: {
+    } | {
+        role: 'manager';
         dashboard: ManagerDashboardResponseDto;
-    };
-};
-
-export type DashboardControllerGetManagerDashboardResponse = DashboardControllerGetManagerDashboardResponses[keyof DashboardControllerGetManagerDashboardResponses];
-
-export type DashboardControllerGetEmployeeDashboardData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/api/dashboard/employee';
-};
-
-export type DashboardControllerGetEmployeeDashboardResponses = {
-    /**
-     * Employee dashboard overview
-     */
-    200: {
+    } | {
+        role: 'employee';
         dashboard: EmployeeDashboardResponseDto;
     };
 };
 
-export type DashboardControllerGetEmployeeDashboardResponse = DashboardControllerGetEmployeeDashboardResponses[keyof DashboardControllerGetEmployeeDashboardResponses];
+export type DashboardControllerGetDashboardResponse = DashboardControllerGetDashboardResponses[keyof DashboardControllerGetDashboardResponses];
 
 export type WelcomePackControllerListTemplatesData = {
     body?: never;
