@@ -9,6 +9,7 @@ import {
   IconMessageReply,
   IconSettings,
   IconTargetArrow,
+  IconTrophy,
   IconUsers,
   IconUserSearch,
   IconUsersGroup
@@ -23,6 +24,7 @@ export interface NavigationRoute {
 }
 
 export interface NavigationRoutes {
+  achievements: NavigationRoute;
   candidates: NavigationRoute;
   dashboard: NavigationRoute;
   employees: NavigationRoute;
@@ -67,6 +69,12 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
     label: 'Цели',
     roleLabels: { employee: 'Мои цели' },
     icon: IconTargetArrow,
+    roles: ['hr', 'manager', 'employee']
+  },
+  {
+    routeKey: 'achievements',
+    label: 'Достижения',
+    icon: IconTrophy,
     roles: ['hr', 'manager', 'employee']
   },
   { routeKey: 'feedback', label: 'Фидбек', icon: IconMessageReply },

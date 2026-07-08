@@ -6,7 +6,6 @@ import {
   LoadingOverlay,
   Paper,
   Progress,
-  Select,
   Tabs,
   Text,
   Title
@@ -26,11 +25,11 @@ import { user } from '@/app/user.model';
 import { getPeriodMeta } from '../Templates/periods';
 import { AchievementsTab } from './components/AchievementsTab/AchievementsTab';
 import { CreatePlanModal } from './components/CreatePlanModal/CreatePlanModal';
+import { EmployeePicker } from './components/EmployeePicker/EmployeePicker';
 import { GoalsTab } from './components/GoalsTab/GoalsTab';
 import { PlanTasksTab } from './components/PlanTasksTab/PlanTasksTab';
 import {
   asText,
-  employeeOptions,
   hrManagers,
   openCreatePlanModal,
   planData,
@@ -41,7 +40,6 @@ import {
   planTasksByPeriod,
   summarizeTasks,
   templatesForPlan,
-  viewedEmployeeId,
   viewedEmployeeName
 } from './model';
 
@@ -52,23 +50,6 @@ const PLAN_STATUS_META = {
   completed: { color: 'blue', label: 'Завершён' },
   cancelled: { color: 'gray', label: 'Отменён' }
 } as const;
-
-const EmployeePicker = reatomComponent(() => {
-  const role = user()?.role;
-
-  if (role === 'employee') return null;
-
-  return (
-    <Select
-      searchable
-      data={employeeOptions.data().map((option) => ({ value: option.id, label: option.name }))}
-      placeholder='Выберите сотрудника'
-      value={viewedEmployeeId() ?? null}
-      w={260}
-      onChange={(value) => viewedEmployeeId.set(value ?? undefined)}
-    />
-  );
-}, 'EmployeePicker');
 
 const PlanHeader = reatomComponent(() => {
   const plan = planData.data();

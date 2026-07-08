@@ -1,6 +1,7 @@
 import type { UserRole } from '@/shared/lib/routing';
 
 import {
+  Achievements,
   Candidates,
   ChangePassword,
   Dashboard,
@@ -150,6 +151,15 @@ export const goalsRoute = authenticatedRoute.reatomRoute(
     render: () => <Goals />
   },
   'goalsRoute'
+);
+
+export const achievementsRoute = authenticatedRoute.reatomRoute(
+  {
+    path: 'achievements',
+    params: roleGuard(['hr', 'manager', 'employee']),
+    render: () => <Achievements />
+  },
+  'achievementsRoute'
 );
 
 export const welcomePackageRoute = authenticatedRoute.reatomRoute(
