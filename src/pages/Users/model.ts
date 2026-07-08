@@ -25,6 +25,10 @@ import { z } from 'zod';
 
 import { getApiError, getErrorCodeMessage } from '@/shared/api/errorCodes';
 
+import type { ResetUserPasswordResponseDto } from './api/postApiUserByIdResetPassword';
+
+import { postApiUserByIdResetPassword } from './api/postApiUserByIdResetPassword';
+
 export type UserRoleFilter = 'all' | UserResponseDto['role'];
 export type UserStatusFilter = 'all' | UserResponseDto['employmentStatus'];
 export type UsersSortBy = 'createdAt' | 'lastName' | 'startDate';
@@ -295,6 +299,37 @@ export const editUserForm = computed(() => {
     }
   );
 }, 'users.editUserForm');
+
+// ── Сброс пароля ──────────────────────────────────────────────────────────
+
+export const resettingUser = atom<UserResponseDto | undefined>(undefined, 'users.resettingUser');
+
+/** Шаг 2 модалки сброса: новый одноразовый временный пароль */
+export const resetPasswordResult = atom<ResetUserPasswordResponseDto | undefined>(
+  undefined,
+  'users.resetPasswordResult'
+);
+
+export const openResetPasswordModal = action((userToReset: UserResponseDto) => {
+  resetPasswordResult.set(undefined);
+  resettingUser.set(userToReset);
+}, 'users.openResetPasswordModal');
+
+export const closeResetPasswordModal = action(() => {
+  resettingUser.set(undefined);
+  resetPasswordResult.set(undefined);
+}, 'users.closeResetPasswordModal');
+
+export const resetUserPassword = action(async (userToReset: UserResponseDto) => {
+  try {
+    const response = await wrap(postApiUserByIdResetPassword({ path: { id: userToReset.id } }));
+
+    resetPasswordResult.set(response.data);
+    refreshUsers();
+  } catch (error) {
+    showApiError(error);
+  }
+}, 'users.resetUserPassword').extend(withAsync());
 
 export const deactivateUser = action(async (userToDeactivate: UserResponseDto) => {
   try {

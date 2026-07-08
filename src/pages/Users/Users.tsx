@@ -17,6 +17,7 @@ import {
 import { reatomComponent } from '@reatom/react';
 import {
   IconCaretUpDown,
+  IconKey,
   IconPencil,
   IconSearch,
   IconSortAscending,
@@ -25,12 +26,14 @@ import {
   IconUsers
 } from '@tabler/icons-react';
 
+import { user } from '@/app/user.model';
 import { UserRoleBadge } from '@/shared/components';
 
 import type { UserRoleFilter, UsersSortBy, UserStatusFilter } from './model';
 
 import { CreateUserModal } from './components/CreateUserModal/CreateUserModal';
 import { EditUserModal } from './components/EditUserModal/EditUserModal';
+import { ResetPasswordModal } from './components/ResetPasswordModal/ResetPasswordModal';
 import {
   asId,
   departmentFilter,
@@ -38,6 +41,7 @@ import {
   fullName,
   openCreateModal,
   openEditModal,
+  openResetPasswordModal,
   page,
   positions,
   roleFilter,
@@ -250,16 +254,30 @@ export const Users = reatomComponent(() => {
                       </Badge>
                     </Table.Td>
                     <Table.Td>
-                      <Button
-                        className={classes.rowAction}
-                        color='gray'
-                        leftSection={<IconPencil size={14} />}
-                        size='compact-xs'
-                        variant='subtle'
-                        onClick={() => openEditModal(item)}
-                      >
-                        Изменить
-                      </Button>
+                      <Group gap={4} justify='flex-end' wrap='nowrap'>
+                        {item.employmentStatus !== 'inactive' && item.id !== user()?.id && (
+                          <Button
+                            className={classes.rowAction}
+                            color='gray'
+                            leftSection={<IconKey size={14} />}
+                            size='compact-xs'
+                            variant='subtle'
+                            onClick={() => openResetPasswordModal(item)}
+                          >
+                            Сброс пароля
+                          </Button>
+                        )}
+                        <Button
+                          className={classes.rowAction}
+                          color='gray'
+                          leftSection={<IconPencil size={14} />}
+                          size='compact-xs'
+                          variant='subtle'
+                          onClick={() => openEditModal(item)}
+                        >
+                          Изменить
+                        </Button>
+                      </Group>
                     </Table.Td>
                   </Table.Tr>
                 );
@@ -281,6 +299,7 @@ export const Users = reatomComponent(() => {
 
       <CreateUserModal />
       <EditUserModal />
+      <ResetPasswordModal />
     </>
   );
 }, 'Users');
