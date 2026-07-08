@@ -66,10 +66,15 @@ export const ActivityFeed = reatomComponent(
         const meta = ACTIVITY_META[item.type];
         const description =
           typeof item.description === 'string' ? item.description : undefined;
+        // Бэкенд отдаёт уникальный id события, но поля ещё нет в сгенерированном
+        // @api-клиенте. TODO(oss-7): после `pnpm generate:api` убрать каст и fallback.
+        const key =
+          (item as DashboardActivityItemDto & { id?: string }).id ??
+          `${item.type}|${item.occurredAt}|${item.title}|${index}`;
 
         return (
           <Group
-            key={`${item.type}|${item.occurredAt}|${item.title}`}
+            key={key}
             align='flex-start'
             gap='xs'
             mb={index === items.length - 1 ? 0 : 'sm'}

@@ -39,8 +39,9 @@ export const Employees = reatomComponent(() => {
 
           <SectionTitle>Под риском</SectionTitle>
           <Paper withBorder p='md' radius='md'>
+            {/* component='div': внутри есть Badge (рендерится <div>), а <div> нельзя вкладывать в <p> */}
             {data.lists.atRiskEmployees.map((item) => (
-              <Text key={item.employeeId} fz={13} mb={4}>
+              <Text key={item.employeeId} component='div' fz={13} mb={4}>
                 <Text component='span' fw={600}>
                   {item.displayName}
                 </Text>{' '}
