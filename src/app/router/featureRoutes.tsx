@@ -2,6 +2,7 @@ import type { UserRole } from '@/shared/lib/routing';
 
 import {
   Achievements,
+  Analytics,
   Candidates,
   ChangePassword,
   Dashboard,
@@ -169,6 +170,15 @@ export const welcomePackageRoute = authenticatedRoute.reatomRoute(
     render: () => <WelcomePackage />
   },
   'welcomePackageRoute'
+);
+
+export const analyticsRoute = authenticatedRoute.reatomRoute(
+  {
+    path: 'analytics',
+    params: roleGuard(['hr', 'recruiter']),
+    render: () => <Analytics />
+  },
+  'analyticsRoute'
 );
 
 export const feedbackRoute = authenticatedRoute.reatomRoute(
