@@ -3,6 +3,7 @@ import type {
   GoalResponseDto,
   OnboardingPlanTaskResponseDto
 } from '@api';
+import type { RequestConfig, RequestOptions } from '@siberiacancode/fetches';
 
 import {
   deleteApiOnboardingPlanByIdTaskByTaskId,
@@ -126,11 +127,26 @@ export const planData = computed(async () => {
 
   if (!employeeId) return null;
 
+  // 404 без плана — ожидаемый кейс. Без onResponseFailure fetches при
+  // зарегистрированном response-интерцепторе (shared/api/session.ts) оставляет
+  // «висящий» Promise.reject для пары интерцепторов без onFailure — в консоль
+  // летит необработанный ResponseError, хотя catch ниже отрабатывает. Явный
+  // onResponseFailure пробрасывает ошибку без unhandled rejection (тот же
+  // приём, что и bootstrapAuthConfig в main.tsx). apicraft типизирует config
+  // как Partial<RequestConfig>, хотя рантайм fetches читает из него и
+  // RequestOptions-колбэки — поэтому тип расширен пересечением.
+  const planRequestConfig: Partial<RequestConfig> & RequestOptions = {
+    signal: abortVar.require().signal,
+    onResponseFailure: (error) => {
+      throw error;
+    }
+  };
+
   try {
     const response = await wrap(
       getApiOnboardingPlansEmployeeByEmployeeId({
         path: { employeeId },
-        config: { signal: abortVar.require().signal }
+        config: planRequestConfig
       })
     );
 
