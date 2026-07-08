@@ -206,6 +206,9 @@ export type CreateOnboardingTemplateDto = {
     departmentId?: string;
     positionId?: string;
     isActive?: boolean;
+    /**
+     * Может быть пустым: шаблон создаётся каркасом, задачи добавляются позже
+     */
     tasks: Array<TemplateTaskDto>;
 };
 
@@ -215,6 +218,9 @@ export type UpdateOnboardingTemplateDto = {
     departmentId?: string;
     positionId?: string;
     isActive?: boolean;
+    /**
+     * Может быть пустым: шаблон создаётся каркасом, задачи добавляются позже
+     */
     tasks?: Array<TemplateTaskDto>;
 };
 
@@ -325,8 +331,22 @@ export type UpdateOnboardingPlanDto = {
     endsAt?: string;
 };
 
+export type CreateOnboardingPlanTaskDto = {
+    title: string;
+    description?: string;
+    period: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    /**
+     * Не указан — задача добавляется в конец периода
+     */
+    sortOrder?: number;
+};
+
 export type UpdateOnboardingPlanTaskDto = {
-    status: 'not_started' | 'in_progress' | 'completed';
+    status?: 'not_started' | 'in_progress' | 'completed';
+    title?: string;
+    description?: string;
+    period?: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    sortOrder?: number;
 };
 
 export type GoalResponseDto = {
@@ -1138,6 +1158,26 @@ export type OnboardingPlansControllerCreateResponses = {
 
 export type OnboardingPlansControllerCreateResponse = OnboardingPlansControllerCreateResponses[keyof OnboardingPlansControllerCreateResponses];
 
+export type OnboardingPlansControllerGetEmployeePlanData = {
+    body?: never;
+    path: {
+        employeeId: string;
+    };
+    query?: never;
+    url: '/api/onboarding-plans/employee/{employeeId}';
+};
+
+export type OnboardingPlansControllerGetEmployeePlanResponses = {
+    /**
+     * Employee onboarding plan
+     */
+    200: {
+        plan: OnboardingPlanResponseDto;
+    };
+};
+
+export type OnboardingPlansControllerGetEmployeePlanResponse = OnboardingPlansControllerGetEmployeePlanResponses[keyof OnboardingPlansControllerGetEmployeePlanResponses];
+
 export type OnboardingPlansControllerGetEmployeeCalendarData = {
     body?: never;
     path: {
@@ -1197,6 +1237,47 @@ export type OnboardingPlansControllerUpdateResponses = {
 };
 
 export type OnboardingPlansControllerUpdateResponse = OnboardingPlansControllerUpdateResponses[keyof OnboardingPlansControllerUpdateResponses];
+
+export type OnboardingPlansControllerAddTaskData = {
+    body: CreateOnboardingPlanTaskDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/api/onboarding-plans/{id}/tasks';
+};
+
+export type OnboardingPlansControllerAddTaskResponses = {
+    /**
+     * Onboarding plan with the new task
+     */
+    201: {
+        plan: OnboardingPlanResponseDto;
+    };
+};
+
+export type OnboardingPlansControllerAddTaskResponse = OnboardingPlansControllerAddTaskResponses[keyof OnboardingPlansControllerAddTaskResponses];
+
+export type OnboardingPlansControllerDeleteTaskData = {
+    body?: never;
+    path: {
+        id: string;
+        taskId: string;
+    };
+    query?: never;
+    url: '/api/onboarding-plans/{id}/tasks/{taskId}';
+};
+
+export type OnboardingPlansControllerDeleteTaskResponses = {
+    /**
+     * Onboarding plan without the deleted task
+     */
+    200: {
+        plan: OnboardingPlanResponseDto;
+    };
+};
+
+export type OnboardingPlansControllerDeleteTaskResponse = OnboardingPlansControllerDeleteTaskResponses[keyof OnboardingPlansControllerDeleteTaskResponses];
 
 export type OnboardingPlansControllerUpdateTaskData = {
     body: UpdateOnboardingPlanTaskDto;

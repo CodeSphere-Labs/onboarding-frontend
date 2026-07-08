@@ -31,6 +31,7 @@ export const createRoleGuard =
     if (!parentParams) return null;
 
     const userRole = parentParams.user?.role;
+
     const hasAccess = userRole ? allowedRoles.includes(userRole) : false;
 
     if (!hasAccess) {
