@@ -496,6 +496,10 @@ export type HrDashboardListsDto = {
 };
 
 export type DashboardActivityItemDto = {
+    /**
+     * Уникальный идентификатор события ленты (стабильный React-key)
+     */
+    id: string;
     type: 'task_completed' | 'feedback_added' | 'goal_added' | 'achievement_confirmed' | 'task_overdue';
     title: string;
     description: {
