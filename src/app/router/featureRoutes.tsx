@@ -1,5 +1,3 @@
-import type { Computed, RouteChild } from '@reatom/core';
-
 import type { UserRole } from '@/shared/lib/routing';
 
 import {
@@ -22,7 +20,6 @@ import { createRoleGuard } from '@/shared/lib/routing';
 import { router } from '.';
 import { user } from '../user.model';
 import { authenticatedRoute, rootRoute } from './internal';
-import { renderOutlet } from './renderOutlet';
 
 export const loginRoute = rootRoute.reatomRoute(
   {
@@ -77,93 +74,88 @@ export const dashboardRoute = authenticatedRoute.reatomRoute(
   'dashboardRoute'
 );
 
-const reatomRoleLayoutRoute = (allowedRoles: readonly UserRole[], name: string) =>
-  authenticatedRoute.reatomRoute(
-    {
-      params: createRoleGuard({
-        allowedRoles,
-        onDenied: () => {
-          router.dashboard.go(undefined, true);
-        },
-        parentRoute: authenticatedRoute
-      }),
-
-      layout: true,
-      render(self: { outlet: Computed<RouteChild[]> }) {
-        return <>{renderOutlet(self.outlet())}</>;
-      }
+/**
+ * Ролевой гейт вешается только на роуты с конкретным path: у pathless
+ * layout-роутов params() выполняется на КАЖДОЙ навигации под родителем,
+ * и onDenied-редирект гонялся бы с целевой навигацией (см. OSS-26).
+ * У роутов с path params() вызывается только при совпадении URL.
+ */
+const roleGuard = (allowedRoles: readonly UserRole[]) =>
+  createRoleGuard({
+    allowedRoles,
+    onDenied: () => {
+      router.dashboard.go(undefined, true);
     },
-    name
-  );
+    parentRoute: authenticatedRoute
+  });
 
-const hrRoute = reatomRoleLayoutRoute(['hr'], 'hrRoute');
-const managerRoute = reatomRoleLayoutRoute(['manager'], 'managerRoute');
-const recruiterRoute = reatomRoleLayoutRoute(['recruiter'], 'recruiterRoute');
-const planAccessRoute = reatomRoleLayoutRoute(['hr', 'manager', 'employee'], 'planAccessRoute');
-const welcomePackageAccessRoute = reatomRoleLayoutRoute(
-  ['employee', 'hr'],
-  'welcomePackageAccessRoute'
-);
-
-export const onboardingsRoute = hrRoute.reatomRoute(
+export const onboardingsRoute = authenticatedRoute.reatomRoute(
   {
     path: 'onboardings',
+    params: roleGuard(['hr']),
     render: () => <Onboardings />
   },
   'onboardingsRoute'
 );
 
-export const templatesRoute = hrRoute.reatomRoute(
+export const templatesRoute = authenticatedRoute.reatomRoute(
   {
     path: 'templates',
+    params: roleGuard(['hr']),
     render: () => <Templates />
   },
   'templatesRoute'
 );
 
-export const usersRoute = hrRoute.reatomRoute(
+export const usersRoute = authenticatedRoute.reatomRoute(
   {
     path: 'users',
+    params: roleGuard(['hr']),
     render: () => <Users />
   },
   'usersRoute'
 );
 
-export const employeesRoute = managerRoute.reatomRoute(
+export const employeesRoute = authenticatedRoute.reatomRoute(
   {
     path: 'employees',
+    params: roleGuard(['manager']),
     render: () => <Employees />
   },
   'employeesRoute'
 );
 
-export const candidatesRoute = recruiterRoute.reatomRoute(
+export const candidatesRoute = authenticatedRoute.reatomRoute(
   {
     path: 'candidates',
+    params: roleGuard(['recruiter']),
     render: () => <Candidates />
   },
   'candidatesRoute'
 );
 
-export const planRoute = planAccessRoute.reatomRoute(
+export const planRoute = authenticatedRoute.reatomRoute(
   {
     path: 'plan',
+    params: roleGuard(['hr', 'manager', 'employee']),
     render: () => <Plan />
   },
   'planRoute'
 );
 
-export const goalsRoute = planAccessRoute.reatomRoute(
+export const goalsRoute = authenticatedRoute.reatomRoute(
   {
     path: 'goals',
+    params: roleGuard(['hr', 'manager', 'employee']),
     render: () => <Goals />
   },
   'goalsRoute'
 );
 
-export const welcomePackageRoute = welcomePackageAccessRoute.reatomRoute(
+export const welcomePackageRoute = authenticatedRoute.reatomRoute(
   {
     path: 'welcome-package',
+    params: roleGuard(['employee', 'hr']),
     render: () => <WelcomePackage />
   },
   'welcomePackageRoute'

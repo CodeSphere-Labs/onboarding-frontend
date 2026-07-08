@@ -1,3 +1,9 @@
+/* eslint-disable perfectionist/sort-imports --
+ * connectLogger расширяет только атомы, созданные ПОСЛЕ вызова: импорт логгера
+ * обязан идти до импорта App/router, иначе весь граф остаётся без логирования.
+ * Автосортировка импортов уносила его вниз — для entry-файла она отключена. */
+import './app/reatomLogger';
+
 import type { RequestConfig, RequestOptions } from '@siberiacancode/fetches';
 
 import { getApiAuthMe } from '@api';
@@ -12,7 +18,6 @@ import { router } from './app/router';
 import { theme } from './app/theme.ts';
 import { user } from './app/user.model.ts';
 
-import './app/reatomLogger';
 import './shared/api/session';
 
 import '@mantine/core/styles.css';
