@@ -1,0 +1,29 @@
+.layout {
+  display: grid;
+  gap: var(--mantine-spacing-md);
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+
+@media (width <= 1100px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  padding: 64px 24px;
+
+  text-align: center;
+}
+
+.bigPercent {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--mantine-color-blue-6);
+}
