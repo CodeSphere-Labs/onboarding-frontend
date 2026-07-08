@@ -4,12 +4,13 @@ import { MainLayout } from '@/app/layouts';
 
 import { router } from '.';
 import { user } from '../user.model';
+import { renderOutlet } from './renderOutlet';
 
 export const rootRoute = reatomRoute(
   {
     layout: true,
     render(self) {
-      return <>{self.outlet()}</>;
+      return <>{renderOutlet(self.outlet())}</>;
     }
   },
   'rootRoute'
@@ -18,7 +19,7 @@ export const rootRoute = reatomRoute(
 export const authenticatedRoute = rootRoute.reatomRoute(
   {
     params() {
-      if (router.login.match()) return null;
+      if (router.login.match() || router.changePassword.match()) return null;
 
       const userData = user();
 
@@ -28,12 +29,18 @@ export const authenticatedRoute = rootRoute.reatomRoute(
         return null;
       }
 
+      if (userData.mustChangePassword) {
+        router.changePassword.go(undefined, true);
+
+        return null;
+      }
+
       return { user: userData };
     },
 
     layout: true,
     render(self) {
-      return <MainLayout navigationRoutes={router}>{self.outlet()}</MainLayout>;
+      return <MainLayout navigationRoutes={router}>{renderOutlet(self.outlet())}</MainLayout>;
     }
   },
   'authenticatedRoute'

@@ -1,4 +1,5 @@
 export { Candidates } from './Candidates/Candidates';
+export { ChangePassword } from './ChangePassword/ChangePassword';
 export { Dashboard } from './Dashboard/Dashboard';
 export { Employees } from './Employees/Employees';
 export { Feedback } from './Feedback/Feedback';

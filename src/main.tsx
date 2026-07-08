@@ -1,3 +1,5 @@
+import type { RequestConfig, RequestOptions } from '@siberiacancode/fetches';
+
 import { getApiAuthMe } from '@api';
 import { MantineProvider } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
@@ -16,9 +18,22 @@ import './shared/api/session';
 import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 
+// 401 на бутстрапе — ожидаемый кейс «не залогинен». Без onResponseFailure
+// fetches при зарегистрированном response-интерцепторе (shared/api/session.ts)
+// оставляет «висящий» Promise.reject для пары интерцепторов без onFailure —
+// в консоль летит необработанный ResponseError. Явный onResponseFailure
+// пробрасывает ошибку в catch ниже без побочного unhandled rejection.
+// apicraft типизирует config как Partial<RequestConfig>, хотя рантайм fetches
+// читает из него и RequestOptions-колбэки — поэтому тип расширен пересечением.
+const bootstrapAuthConfig: Partial<RequestConfig> & RequestOptions = {
+  onResponseFailure: (error) => {
+    throw error;
+  }
+};
+
 const init = async () => {
   try {
-    const userResponse = await wrap(getApiAuthMe());
+    const userResponse = await wrap(getApiAuthMe({ config: bootstrapAuthConfig }));
 
     user.set(userResponse.data.user);
   } catch {

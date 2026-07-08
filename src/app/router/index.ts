@@ -1,5 +1,6 @@
 import {
   candidatesRoute,
+  changePasswordRoute,
   dashboardRoute,
   employeesRoute,
   feedbackRoute,
@@ -20,6 +21,7 @@ export { authenticatedRoute, rootRoute } from './internal';
 export const router = {
   root: rootRoute,
   login: loginRoute,
+  changePassword: changePasswordRoute,
   dashboard: dashboardRoute,
   onboardings: onboardingsRoute,
   templates: templatesRoute,

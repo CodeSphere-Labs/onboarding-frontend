@@ -23,7 +23,9 @@ export const loginForm = reatomForm(
         const result = await wrap(postApiAuthLogin({ body: state }));
 
         user.set(result.data.user);
-        router.dashboard.go();
+
+        if (result.data.user.mustChangePassword) router.changePassword.go();
+        else router.dashboard.go();
       } catch (error) {
         const apiError = getApiError(error);
 
