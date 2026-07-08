@@ -424,11 +424,13 @@ export type ConfirmAchievementDto = {
 export type FeedbackResponseDto = {
     id: string;
     recipientId: string;
-    authorId: string;
-    authorRole: 'hr' | 'recruiter' | 'manager' | 'employee';
     strengths: string;
     improvements: string;
     status: 'active' | 'archived';
+    /**
+     * Признак «оставлен текущим пользователем»
+     */
+    isMine: boolean;
     createdAt: string;
     updatedAt: string;
 };
@@ -437,6 +439,14 @@ export type CreateFeedbackDto = {
     recipientId: string;
     strengths: string;
     improvements: string;
+};
+
+export type FeedbackRecipientResponseDto = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    patronymic: string | null;
+    role: 'hr' | 'recruiter' | 'manager' | 'employee';
 };
 
 export type NotificationResponseDto = {
@@ -1470,8 +1480,6 @@ export type FeedbackControllerListData = {
          */
         search?: string;
         recipientId?: string;
-        authorId?: string;
-        authorRole?: 'hr' | 'recruiter' | 'manager' | 'employee';
         status?: 'active' | 'archived';
         sortBy?: 'createdAt' | 'updatedAt';
         sortOrder?: 'asc' | 'desc';
@@ -1500,7 +1508,7 @@ export type FeedbackControllerCreateData = {
 
 export type FeedbackControllerCreateResponses = {
     /**
-     * Created feedback entry
+     * Created feedback entry (anonymized)
      */
     201: {
         feedback: FeedbackResponseDto;
@@ -1508,6 +1516,24 @@ export type FeedbackControllerCreateResponses = {
 };
 
 export type FeedbackControllerCreateResponse = FeedbackControllerCreateResponses[keyof FeedbackControllerCreateResponses];
+
+export type FeedbackControllerListRecipientsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/feedback/recipients';
+};
+
+export type FeedbackControllerListRecipientsResponses = {
+    /**
+     * Active users available as feedback recipients
+     */
+    200: {
+        items: Array<FeedbackRecipientResponseDto>;
+    };
+};
+
+export type FeedbackControllerListRecipientsResponse = FeedbackControllerListRecipientsResponses[keyof FeedbackControllerListRecipientsResponses];
 
 export type NotificationsControllerListData = {
     body?: never;
