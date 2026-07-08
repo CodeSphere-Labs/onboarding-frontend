@@ -21,6 +21,7 @@ export * from './requests/onboardingTemplates/getApiOnboardingTemplates.gen';
 export * from './requests/onboardingTemplates/postApiOnboardingTemplates.gen';
 export * from './requests/onboardingTemplates/getApiOnboardingTemplateById.gen';
 export * from './requests/onboardingTemplates/patchApiOnboardingTemplateById.gen';
+export * from './requests/onboardingPlans/getApiOnboardingPlans.gen';
 export * from './requests/onboardingPlans/postApiOnboardingPlans.gen';
 export * from './requests/onboardingPlans/getApiOnboardingPlansEmployeeByEmployeeId.gen';
 export * from './requests/onboardingPlans/getApiOnboardingPlansEmployeeByEmployeeIdCalendar.gen';

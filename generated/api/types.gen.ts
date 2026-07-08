@@ -1150,6 +1150,42 @@ export type OnboardingTemplatesControllerUpdateResponses = {
 
 export type OnboardingTemplatesControllerUpdateResponse = OnboardingTemplatesControllerUpdateResponses[keyof OnboardingTemplatesControllerUpdateResponses];
 
+export type OnboardingPlansControllerListData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Page number
+         */
+        page?: number;
+        /**
+         * Items per page
+         */
+        limit?: number;
+        /**
+         * Free text search term
+         */
+        search?: string;
+        status?: 'active' | 'completed' | 'cancelled';
+        managerId?: string;
+        sortBy?: 'createdAt' | 'startsAt' | 'updatedAt';
+        sortOrder?: 'asc' | 'desc';
+    };
+    url: '/api/onboarding-plans';
+};
+
+export type OnboardingPlansControllerListResponses = {
+    /**
+     * Paginated onboarding plans list
+     */
+    200: {
+        items: Array<OnboardingPlanResponseDto>;
+        meta: PaginationMetaDto;
+    };
+};
+
+export type OnboardingPlansControllerListResponse = OnboardingPlansControllerListResponses[keyof OnboardingPlansControllerListResponses];
+
 export type OnboardingPlansControllerCreateData = {
     body: CreateOnboardingPlanDto;
     path?: never;
