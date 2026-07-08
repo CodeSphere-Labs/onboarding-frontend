@@ -1,6 +1,7 @@
 import type { Icon } from '@tabler/icons-react';
 
 import {
+  IconChartBar,
   IconChecklist,
   IconFiles,
   IconGift,
@@ -25,6 +26,7 @@ export interface NavigationRoute {
 
 export interface NavigationRoutes {
   achievements: NavigationRoute;
+  analytics: NavigationRoute;
   candidates: NavigationRoute;
   dashboard: NavigationRoute;
   employees: NavigationRoute;
@@ -55,6 +57,7 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
   { routeKey: 'onboardings', label: 'Онбординги', icon: IconListCheck, roles: ['hr'] },
   { routeKey: 'templates', label: 'Шаблоны', icon: IconFiles, roles: ['hr'] },
   { routeKey: 'users', label: 'Пользователи', icon: IconUsers, roles: ['hr'] },
+  { routeKey: 'analytics', label: 'Аналитика', icon: IconChartBar, roles: ['hr', 'recruiter'] },
   { routeKey: 'employees', label: 'Мои сотрудники', icon: IconUsersGroup, roles: ['manager'] },
   { routeKey: 'candidates', label: 'Мои кандидаты', icon: IconUserSearch, roles: ['recruiter'] },
   {
