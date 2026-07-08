@@ -1,3 +1,4 @@
+export { Achievements } from './Achievements/Achievements';
 export { Candidates } from './Candidates/Candidates';
 export { ChangePassword } from './ChangePassword/ChangePassword';
 export { Dashboard } from './Dashboard/Dashboard';

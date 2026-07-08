@@ -1,4 +1,5 @@
 import {
+  achievementsRoute,
   candidatesRoute,
   changePasswordRoute,
   dashboardRoute,
@@ -26,6 +27,7 @@ export const router = {
   onboardings: onboardingsRoute,
   templates: templatesRoute,
   goals: goalsRoute,
+  achievements: achievementsRoute,
   plan: planRoute,
   feedback: feedbackRoute,
   users: usersRoute,
