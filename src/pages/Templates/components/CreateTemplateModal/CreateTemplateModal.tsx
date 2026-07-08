@@ -24,9 +24,10 @@ export const CreateTemplateModal = reatomComponent(() => {
       onClose={() => createModalOpened.setFalse()}
     >
       <form onSubmit={handleSubmit}>
+        {/* без required: нативная проверка браузера перебивала Zod-текст «Минимум 2 символа» */}
         <TextInput
           data-autofocus
-          required
+          withAsterisk
           label='Название роли'
           placeholder='Frontend Developer'
           {...nameField}
