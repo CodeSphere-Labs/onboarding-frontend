@@ -1,9 +1,7 @@
 import type {
   AchievementResponseDto,
   GoalResponseDto,
-  OnboardingPlanResponseDto,
-  OnboardingPlanTaskResponseDto,
-  UserResponseDto
+  OnboardingPlanTaskResponseDto
 } from '@api';
 
 import {
@@ -77,14 +75,21 @@ export interface EmployeeOption {
   name: string;
 }
 
-/** Кандидаты для селектора: HR — все сотрудники, менеджер — свои (из дашборда) */
+/** Полные карточки сотрудников — только HR (users API закрыт для остальных ролей) */
+export const hrEmployees = computed(async () => {
+  if (user()?.role !== 'hr') return [];
+
+  const response = await wrap(getApiUsers({ query: { role: 'employee', limit: 100 } }));
+
+  return response.data.items;
+}, 'plan.hrEmployees').extend(withAsyncData({ initState: [] }));
+
+/** Кандидаты для селектора: HR — все сотрудники (из hrEmployees), менеджер — свои (из дашборда) */
 export const employeeOptions = computed(async () => {
   const role = user()?.role;
 
   if (role === 'hr') {
-    const response = await wrap(getApiUsers({ query: { role: 'employee', limit: 100 } }));
-
-    return response.data.items.map<EmployeeOption>((item) => ({
+    return hrEmployees.data().map<EmployeeOption>((item) => ({
       id: item.id,
       name: `${item.lastName} ${item.firstName}`.trim()
     }));
@@ -104,15 +109,6 @@ export const employeeOptions = computed(async () => {
 
   return [];
 }, 'plan.employeeOptions').extend(withAsyncData({ initState: [] }));
-
-/** Полные карточки сотрудников — только HR (users API закрыт для остальных ролей) */
-export const hrEmployees = computed(async () => {
-  if (user()?.role !== 'hr') return [];
-
-  const response = await wrap(getApiUsers({ query: { role: 'employee', limit: 100 } }));
-
-  return response.data.items;
-}, 'plan.hrEmployees').extend(withAsyncData({ initState: [] }));
 
 export const hrManagers = computed(async () => {
   if (user()?.role !== 'hr') return [];
@@ -613,10 +609,3 @@ export const viewedEmployeeName = computed(() => {
 
   return employeeOptions.data().find((option) => option.id === employeeId)?.name ?? '';
 }, 'plan.viewedEmployeeName');
-
-/** Полная карточка выбранного сотрудника — доступна только HR */
-export const viewedEmployeeDetails = computed<UserResponseDto | undefined>(() => {
-  const employeeId = planEmployeeId();
-
-  return hrEmployees.data().find((item) => item.id === employeeId);
-}, 'plan.viewedEmployeeDetails');
