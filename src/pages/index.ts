@@ -9,6 +9,7 @@ export { Goals } from './Goals/Goals';
 export { Login } from './Login/Login';
 export { Onboardings } from './Onboardings/Onboardings';
 export { Plan } from './Plan/Plan';
+export { PlanPrint } from './PlanPrint/PlanPrint';
 export { Settings } from './Settings/Settings';
 export { Templates } from './Templates/Templates';
 export { Users } from './Users/Users';

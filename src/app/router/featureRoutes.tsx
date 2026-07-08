@@ -12,6 +12,7 @@ import {
   Login,
   Onboardings,
   Plan,
+  PlanPrint,
   Settings,
   Templates,
   Users,
@@ -66,6 +67,38 @@ export const changePasswordRoute = rootRoute.reatomRoute(
     render: () => <ChangePassword />
   },
   'changePasswordRoute'
+);
+
+/** Печатная версия плана — вне MainLayout (см. исключение в authenticatedRoute) */
+export const planPrintRoute = rootRoute.reatomRoute(
+  {
+    path: 'plan/print',
+    params() {
+      const userData = user();
+
+      if (!userData) {
+        router.login.go(undefined, true);
+
+        return null;
+      }
+
+      if (userData.mustChangePassword) {
+        router.changePassword.go(undefined, true);
+
+        return null;
+      }
+
+      if (userData.role === 'recruiter') {
+        router.dashboard.go(undefined, true);
+
+        return null;
+      }
+
+      return {};
+    },
+    render: () => <PlanPrint />
+  },
+  'planPrintRoute'
 );
 
 export const dashboardRoute = authenticatedRoute.reatomRoute(

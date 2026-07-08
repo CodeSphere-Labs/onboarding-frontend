@@ -19,7 +19,9 @@ export const rootRoute = reatomRoute(
 export const authenticatedRoute = rootRoute.reatomRoute(
   {
     params() {
-      if (router.login.match() || router.changePassword.match()) return null;
+      if (router.login.match() || router.changePassword.match() || router.planPrint.match()) {
+        return null;
+      }
 
       const userData = user();
 
