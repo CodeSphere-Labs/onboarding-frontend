@@ -37,6 +37,7 @@ export * from './requests/achievements/postApiAchievements.gen';
 export * from './requests/achievements/patchApiAchievementByIdConfirm.gen';
 export * from './requests/feedback/getApiFeedback.gen';
 export * from './requests/feedback/postApiFeedback.gen';
+export * from './requests/feedback/getApiFeedbackRecipients.gen';
 export * from './requests/notifications/getApiNotifications.gen';
 export * from './requests/notifications/patchApiNotificationByIdRead.gen';
 export * from './requests/notifications/patchApiNotificationsReadAll.gen';
