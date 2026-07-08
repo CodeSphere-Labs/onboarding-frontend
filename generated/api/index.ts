@@ -5,6 +5,7 @@ export * from './requests/auth/postApiAuthLogin.gen';
 export * from './requests/auth/postApiAuthLogout.gen';
 export * from './requests/auth/postApiAuthLogoutAll.gen';
 export * from './requests/auth/postApiAuthChangeTemporaryPassword.gen';
+export * from './requests/auth/postApiAuthChangePassword.gen';
 export * from './requests/auth/getApiAuthMe.gen';
 export * from './requests/org/getApiOrgDepartments.gen';
 export * from './requests/org/postApiOrgDepartments.gen';

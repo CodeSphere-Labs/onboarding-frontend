@@ -778,6 +778,22 @@ export type AuthControllerChangeTemporaryPasswordResponses = {
 
 export type AuthControllerChangeTemporaryPasswordResponse = AuthControllerChangeTemporaryPasswordResponses[keyof AuthControllerChangeTemporaryPasswordResponses];
 
+export type AuthControllerChangePasswordData = {
+    body: ChangeTemporaryPasswordDto;
+    path?: never;
+    query?: never;
+    url: '/api/auth/change-password';
+};
+
+export type AuthControllerChangePasswordResponses = {
+    /**
+     * Authenticated user profile after password change
+     */
+    200: AuthResponseDto;
+};
+
+export type AuthControllerChangePasswordResponse = AuthControllerChangePasswordResponses[keyof AuthControllerChangePasswordResponses];
+
 export type AuthControllerMeData = {
     body?: never;
     path?: never;
