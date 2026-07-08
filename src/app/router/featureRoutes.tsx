@@ -4,6 +4,7 @@ import type { UserRole } from '@/shared/lib/routing';
 
 import {
   Candidates,
+  ChangePassword,
   Dashboard,
   Employees,
   Feedback,
@@ -21,13 +22,17 @@ import { createRoleGuard } from '@/shared/lib/routing';
 import { router } from '.';
 import { user } from '../user.model';
 import { authenticatedRoute, rootRoute } from './internal';
+import { renderOutlet } from './renderOutlet';
 
 export const loginRoute = rootRoute.reatomRoute(
   {
     path: 'login',
     params() {
-      if (user()) {
-        router.dashboard.go(undefined, true);
+      const userData = user();
+
+      if (userData) {
+        if (userData.mustChangePassword) router.changePassword.go(undefined, true);
+        else router.dashboard.go(undefined, true);
 
         return null;
       }
@@ -37,6 +42,31 @@ export const loginRoute = rootRoute.reatomRoute(
     render: () => <Login />
   },
   'loginRoute'
+);
+
+export const changePasswordRoute = rootRoute.reatomRoute(
+  {
+    path: 'change-password',
+    params() {
+      const userData = user();
+
+      if (!userData) {
+        router.login.go(undefined, true);
+
+        return null;
+      }
+
+      if (userData.mustChangePassword !== true) {
+        router.dashboard.go(undefined, true);
+
+        return null;
+      }
+
+      return {};
+    },
+    render: () => <ChangePassword />
+  },
+  'changePasswordRoute'
 );
 
 export const dashboardRoute = authenticatedRoute.reatomRoute(
@@ -60,7 +90,7 @@ const reatomRoleLayoutRoute = (allowedRoles: readonly UserRole[], name: string) 
 
       layout: true,
       render(self: { outlet: Computed<RouteChild[]> }) {
-        return <>{self.outlet()}</>;
+        return <>{renderOutlet(self.outlet())}</>;
       }
     },
     name
