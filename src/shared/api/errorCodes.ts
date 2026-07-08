@@ -49,7 +49,24 @@ export type ApiError = Omit<ResponseError, 'response'> & {
   };
 };
 
-export const getApiError = (error: unknown) => (error as ApiError).response.data;
+const FALLBACK_API_ERROR: ApiErrorResponse = {
+  code: 'unknown_error',
+  message: 'Что-то пошло не так. Попробуйте ещё раз',
+  path: '',
+  statusCode: 0,
+  timestamp: ''
+};
+
+/** Устойчив к не-API ошибкам (TypeError и т.п.): без валидной структуры — generic */
+export const getApiError = (error: unknown): ApiErrorResponse => {
+  const data = (error as Partial<ApiError>)?.response?.data;
+
+  if (data && typeof data === 'object' && typeof data.code === 'string') {
+    return data;
+  }
+
+  return FALLBACK_API_ERROR;
+};
 
 export const getErrorCodeMessage = (code?: string | null, fallback = 'Произошла ошибка') => {
   if (!code) return fallback;

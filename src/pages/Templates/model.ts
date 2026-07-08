@@ -337,11 +337,22 @@ export const createTemplateForm = reatomForm(
           })
         );
 
+        const createdTemplate = response.data.template as
+          | typeof response.data.template
+          | null;
+
         templatesList.retry();
-        selectedTemplateId.set(response.data.template.id);
+
+        if (!createdTemplate) {
+          notifications.show({ message: 'Сервер не вернул созданный шаблон', color: 'red' });
+
+          return;
+        }
+
+        selectedTemplateId.set(createdTemplate.id);
         createModalOpened.setFalse();
         notifications.show({
-          message: `Шаблон «${response.data.template.name}» создан — добавьте периоды`,
+          message: `Шаблон «${createdTemplate.name}» создан — добавьте периоды`,
           color: 'green'
         });
       } catch (error) {
@@ -374,8 +385,19 @@ export const duplicateTemplate = action(async () => {
       })
     );
 
+    const createdTemplate = response.data.template as
+      | typeof response.data.template
+      | null;
+
     templatesList.retry();
-    selectedTemplateId.set(response.data.template.id);
+
+    if (!createdTemplate) {
+      notifications.show({ message: 'Сервер не вернул созданный шаблон', color: 'red' });
+
+      return;
+    }
+
+    selectedTemplateId.set(createdTemplate.id);
     notifications.show({ message: 'Шаблон продублирован', color: 'green' });
   } catch (error) {
     showApiError(error);

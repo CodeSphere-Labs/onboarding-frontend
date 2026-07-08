@@ -20,9 +20,10 @@ const TaskFormFields = reatomComponent(() => {
 
   return (
     <form onSubmit={handleSubmit}>
+      {/* без required: нативная проверка браузера перебивала Zod-текст «Минимум 2 символа» */}
       <TextInput
         data-autofocus
-        required
+        withAsterisk
         label='Название'
         placeholder='Что нужно сделать'
         {...titleField}
