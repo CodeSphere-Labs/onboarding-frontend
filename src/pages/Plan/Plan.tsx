@@ -15,11 +15,13 @@ import {
   IconChecklist,
   IconClipboardOff,
   IconPlus,
+  IconPrinter,
   IconTargetArrow,
   IconTrophy,
   IconUserSearch
 } from '@tabler/icons-react';
 
+import { router } from '@/app/router';
 import { user } from '@/app/user.model';
 
 import { getPeriodMeta } from '../Templates/periods';
@@ -107,6 +109,14 @@ const PlanHeader = reatomComponent(() => {
               </Text>
             </div>
           )}
+          <Button
+            leftSection={<IconPrinter size={14} />}
+            size='xs'
+            variant='default'
+            onClick={() => router.planPrint.go()}
+          >
+            Печать
+          </Button>
         </Group>
       </Group>
     </Paper>
