@@ -1,0 +1,37 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-bottom: var(--mantine-spacing-md);
+  padding: 20px 24px;
+
+  background: linear-gradient(
+    135deg,
+    var(--mantine-color-blue-6),
+    var(--mantine-color-indigo-6)
+  );
+
+  border-radius: var(--mantine-radius-md);
+}
+
+.bannerPercent {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--mantine-color-white);
+}
+
+.feedbackItem {
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+}
+
+.feedbackItem:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+
+  border-bottom: none;
+}
