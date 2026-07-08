@@ -1,0 +1,163 @@
+.page {
+  display: flex;
+  flex-direction: column;
+
+  height: 100%;
+}
+
+.root {
+  position: relative;
+
+  display: flex;
+  flex: 1;
+
+  min-height: 0;
+
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-radius: var(--mantine-radius-md);
+
+  overflow: hidden;
+}
+
+.listPane {
+  display: flex;
+  flex-direction: column;
+
+  width: 280px;
+
+  border-right: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+
+  flex-shrink: 0;
+}
+
+.listHeader {
+  padding: 14px 16px 8px;
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--mantine-color-dimmed);
+}
+
+.listSearch {
+  padding: 0 14px 10px;
+
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.listScroll {
+  flex: 1;
+
+  overflow-y: auto;
+}
+
+.deptLabel {
+  padding: 8px 16px 4px;
+
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--mantine-color-dimmed);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+
+  padding: 10px 16px;
+
+  font: inherit;
+  text-align: left;
+  color: inherit;
+
+  background: none;
+
+  border: none;
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-1), var(--mantine-color-dark-5));
+
+  transition: background-color 150ms;
+
+  cursor: pointer;
+}
+
+.item:hover {
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6));
+}
+
+.item[data-active] {
+  background-color: light-dark(var(--mantine-color-blue-0), rgb(34 139 230 / 12%));
+}
+
+.itemName {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.detailPane {
+  flex: 1;
+
+  min-width: 0;
+
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-8));
+
+  overflow-y: auto;
+}
+
+.detailHeader {
+  padding: 20px 24px;
+
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+
+  border-bottom: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+}
+
+.detailContent {
+  padding: 20px 24px;
+}
+
+.periodCard {
+  min-width: 90px;
+
+  padding: 8px 12px;
+
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+
+  border: 1px solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-radius: var(--mantine-radius-md);
+  border-top-width: 3px;
+}
+
+.emptyDetail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  height: 100%;
+
+  padding: 60px 24px;
+
+  text-align: center;
+}
+
+.emptyPeriods {
+  padding: 36px 24px;
+
+  text-align: center;
+
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-7));
+
+  border: 2px dashed light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  border-radius: var(--mantine-radius-md);
+}
