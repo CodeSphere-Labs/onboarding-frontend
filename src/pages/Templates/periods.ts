@@ -1,60 +1,70 @@
-import type { OnboardingTemplateTaskResponseDto } from '@api';
+/**
+ * Хелперы пользовательских периодов: период — это название + диапазон дней
+ * от даты выхода сотрудника (1-based, границы включительно).
+ * TODO(OSS-16): поднять в shared, если появится третий потребитель.
+ */
 
-export type OnboardingPeriod = OnboardingTemplateTaskResponseDto['period'];
-
-/** Канонический порядок периодов — зеркало ONBOARDING_PERIODS бэкенда */
-export const PERIOD_ORDER: OnboardingPeriod[] = [
-  'week_1',
-  'week_2',
-  'week_3',
-  'week_4',
-  'week_5',
-  'week_6',
-  'week_7',
-  'week_8',
-  'week_9',
-  'week_10',
-  'week_11',
-  'week_12',
-  'month_1',
-  'month_2',
-  'month_3'
-];
-
-export interface PeriodMeta {
-  color: string;
-  group: 'month' | 'week';
-  label: string;
-  number: number;
-  range: string;
+export interface PeriodRange {
+  endDay: number;
+  startDay: number;
 }
 
-const MONTH_COLORS = ['violet', 'green', 'teal'];
+export const periodDurationDays = ({ endDay, startDay }: PeriodRange) =>
+  Math.max(1, endDay - startDay + 1);
 
-const MONTH_RANGES = ['Дни 8–30', 'Дни 31–60', 'Дни 61–90'];
+export const formatDayRange = ({ endDay, startDay }: PeriodRange) =>
+  startDay === endDay ? `День ${startDay}` : `Дни ${startDay}–${endDay}`;
 
-export const getPeriodMeta = (period: OnboardingPeriod): PeriodMeta => {
-  const [group, rawNumber] = period.split('_') as ['month' | 'week', string];
-  const number = Number(rawNumber);
+/** Цвет по длительности: недельные — синие, месячные — фиолетовые, длиннее — бирюзовые */
+export const getPeriodColor = (period: PeriodRange) => {
+  const duration = periodDurationDays(period);
 
-  if (group === 'month') {
-    return {
-      group,
-      number,
-      label: `Месяц ${number}`,
-      range: MONTH_RANGES[number - 1],
-      color: MONTH_COLORS[number - 1]
-    };
-  }
+  if (duration <= 7) return 'blue';
+  if (duration <= 14) return 'cyan';
+  if (duration <= 31) return 'violet';
 
-  return {
-    group,
-    number,
-    label: `Неделя ${number}`,
-    range: `Дни ${(number - 1) * 7 + 1}–${number * 7}`,
-    color: 'blue'
-  };
+  return 'teal';
 };
 
-export const sortPeriods = (periods: OnboardingPeriod[]): OnboardingPeriod[] =>
-  periods.toSorted((left, right) => PERIOD_ORDER.indexOf(left) - PERIOD_ORDER.indexOf(right));
+export const sortPeriodRanges = <Period extends PeriodRange & { name: string }>(
+  periods: Period[]
+): Period[] =>
+  periods.toSorted(
+    (left, right) =>
+      left.startDay - right.startDay ||
+      left.endDay - right.endDay ||
+      left.name.localeCompare(right.name, 'ru')
+  );
+
+// ── Пресеты для быстрого выбора диапазона ─────────────────────────────────
+
+export interface PeriodPreset extends PeriodRange {
+  name: string;
+}
+
+/** Месяц N работы сотрудника: дни (N-1)·30+1 … N·30 */
+export const monthPreset = (monthNumber: number): PeriodPreset => ({
+  name: `Месяц ${monthNumber}`,
+  startDay: (monthNumber - 1) * 30 + 1,
+  endDay: monthNumber * 30
+});
+
+/** Неделя N работы сотрудника: дни (N-1)·7+1 … N·7 */
+export const weekPreset = (weekNumber: number): PeriodPreset => ({
+  name: `Неделя ${weekNumber}`,
+  startDay: (weekNumber - 1) * 7 + 1,
+  endDay: weekNumber * 7
+});
+
+/**
+ * Человекочитаемое название enum-периода целей (month_1..month_3).
+ * Периоды целей остались enum'ом — в отличие от периодов шаблонов/планов.
+ */
+export const formatGoalPeriodLabel = (period: string) => {
+  const [group, rawNumber] = period.split('_');
+
+  if (group === 'month') return `Месяц ${rawNumber}`;
+  if (group === 'week') return `Неделя ${rawNumber}`;
+
+  return period;
+};

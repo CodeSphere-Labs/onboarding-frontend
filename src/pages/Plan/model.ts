@@ -39,11 +39,19 @@ import { user } from '@/app/user.model';
 import { getApiError, getErrorCodeMessage } from '@/shared/api/errorCodes';
 
 // TODO(OSS-16): поднять периоды в shared вместе с переиспользованием компонентов
-import type { OnboardingPeriod } from '../Templates/periods';
+import type { PeriodRange } from '../Templates/periods';
 
-import { sortPeriods } from '../Templates/periods';
+import { sortPeriodRanges } from '../Templates/periods';
 
 export type TaskStatus = OnboardingPlanTaskResponseDto['status'];
+
+/** Enum-период целей (месяц 1–3 по PRD) — не путать с пользовательскими периодами плана */
+export type GoalPeriod = GoalResponseDto['period'];
+
+/** Период плана — снапшот из задач: название + окно в днях от даты выхода */
+export interface PlanPeriod extends PeriodRange {
+  name: string;
+}
 
 /** В сгенерированных DTO nullable-поля типизированы как объект — приводим к строке */
 export const asText = (value: unknown) => (typeof value === 'string' ? value : undefined);
@@ -165,18 +173,30 @@ export const planPeriods = computed(() => {
 
   if (!plan) return [];
 
-  return sortPeriods([...new Set(plan.tasks.map((task) => task.period))]);
+  const periodByName = new Map<string, PlanPeriod>();
+
+  for (const task of plan.tasks) {
+    if (!periodByName.has(task.periodName)) {
+      periodByName.set(task.periodName, {
+        name: task.periodName,
+        startDay: task.periodStartDay,
+        endDay: task.periodEndDay
+      });
+    }
+  }
+
+  return sortPeriodRanges([...periodByName.values()]);
 }, 'plan.periods');
 
 export const planTasksByPeriod = computed(() => {
   const plan = planData.data();
-  const map = new Map<OnboardingPeriod, OnboardingPlanTaskResponseDto[]>();
+  const map = new Map<string, OnboardingPlanTaskResponseDto[]>();
 
   for (const task of plan?.tasks ?? []) {
-    const periodTasks = map.get(task.period) ?? [];
+    const periodTasks = map.get(task.periodName) ?? [];
 
     periodTasks.push(task);
-    map.set(task.period, periodTasks);
+    map.set(task.periodName, periodTasks);
   }
 
   return map;
@@ -276,7 +296,7 @@ export const cycleTaskStatus = action(async (task: OnboardingPlanTaskResponseDto
   }
 }, 'plan.cycleTaskStatus').extend(withAsync());
 
-export const addPlanTask = action(async (period: OnboardingPeriod, title: string) => {
+export const addPlanTask = action(async (period: PlanPeriod, title: string) => {
   const plan = planData.data();
   const trimmedTitle = title.trim();
 
@@ -286,7 +306,12 @@ export const addPlanTask = action(async (period: OnboardingPeriod, title: string
     await wrap(
       postApiOnboardingPlanByIdTasks({
         path: { id: plan.id },
-        body: { title: trimmedTitle, period }
+        body: {
+          title: trimmedTitle,
+          periodName: period.name,
+          periodStartDay: period.startDay,
+          periodEndDay: period.endDay
+        }
       })
     );
 
@@ -419,7 +444,13 @@ export const createPlanForm = reatomForm(
               ...(state.templateId && { templateId: state.templateId }),
               ...(!state.templateId && {
                 tasks: [
-                  { title: state.firstTaskTitle.trim(), period: 'week_1' as const, sortOrder: 1 }
+                  {
+                    title: state.firstTaskTitle.trim(),
+                    periodName: 'Неделя 1',
+                    periodStartDay: 1,
+                    periodEndDay: 7,
+                    sortOrder: 1
+                  }
                 ]
               })
             }
@@ -456,7 +487,7 @@ export const goalsList = computed(async () => {
 /** undefined — модалка закрыта, null — создание, объект — редактирование */
 export const editingGoal = atom<GoalResponseDto | null | undefined>(undefined, 'plan.editingGoal');
 
-const GOAL_PERIODS: OnboardingPeriod[] = ['month_1', 'month_2', 'month_3'];
+const GOAL_PERIODS: GoalPeriod[] = ['month_1', 'month_2', 'month_3'];
 
 export const goalForm = computed(() => {
   const goal = editingGoal();
@@ -492,7 +523,7 @@ export const goalForm = computed(() => {
                 body: {
                   title: state.title.trim(),
                   description: state.description.trim() || undefined,
-                  period: state.period as OnboardingPeriod,
+                  period: state.period as GoalPeriod,
                   status: state.status as GoalResponseDto['status']
                 }
               })
@@ -506,7 +537,7 @@ export const goalForm = computed(() => {
                   managerId: currentUser.id,
                   title: state.title.trim(),
                   description: state.description.trim() || undefined,
-                  period: state.period as OnboardingPeriod
+                  period: state.period as GoalPeriod
                 }
               })
             );

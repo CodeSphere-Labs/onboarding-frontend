@@ -1,90 +1,222 @@
-import { Button, Popover, Text } from '@mantine/core';
-import { reatomBoolean } from '@reatom/core';
+import { Badge, Button, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
+import { DatePicker } from '@mantine/dates';
+import { action, atom, computed, reatomBoolean } from '@reatom/core';
 import { reatomComponent } from '@reatom/react';
-import { IconPlus } from '@tabler/icons-react';
+import { IconCalendarPlus, IconPlus } from '@tabler/icons-react';
 
-import type { OnboardingPeriod } from '../../periods';
+import type { PeriodPreset } from '../../periods';
 
-import { addPeriod, templatePeriods } from '../../model';
-import { getPeriodMeta, PERIOD_ORDER } from '../../periods';
+import { addPeriod, saveTemplateStructure } from '../../model';
+import { formatDayRange, monthPreset, periodDurationDays, weekPreset } from '../../periods';
 
 import classes from './addPeriodPicker.module.css';
 
-const pickerOpened = reatomBoolean(false, 'templates.periodPickerOpened');
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-const PeriodChips = reatomComponent(
-  ({ periods }: { periods: OnboardingPeriod[] }) => (
-    <div className={classes.chips}>
-      {periods.map((period) => {
-        const meta = getPeriodMeta(period);
+/** Якорь календаря: сегодня = «день 1» работы сотрудника */
+const startOfToday = () => {
+  const now = new Date();
 
-        return (
-          <Button
-            key={period}
-            color={meta.color}
-            radius='xl'
-            size='compact-xs'
-            variant='outline'
-            onClick={() => {
-              addPeriod(period);
-              pickerOpened.setFalse();
-            }}
-          >
-            {meta.label}
-          </Button>
-        );
-      })}
-    </div>
-  ),
-  'PeriodChips'
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+};
+
+/** Календарная арифметика (не мс): устойчиво к переходам на летнее/зимнее время */
+const dayNumberToDate = (anchor: Date, dayNumber: number) =>
+  new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() + dayNumber - 1);
+
+/** Mantine DatePicker отдаёт строки YYYY-MM-DD — парсим в локальной TZ, как и якорь */
+const parseLocalDate = (value: string) => {
+  const [year, month, day] = value.split('-').map(Number);
+
+  return new Date(year, month - 1, day);
+};
+
+const toDateString = (date: Date) => {
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${date.getFullYear()}-${month}-${day}`;
+};
+
+const dateToDayNumber = (anchor: Date, date: Date) =>
+  Math.round((date.getTime() - anchor.getTime()) / DAY_MS) + 1;
+
+// ── Состояние модалки ─────────────────────────────────────────────────────
+
+const modalOpened = reatomBoolean(false, 'templates.periodModalOpened');
+const periodName = atom('', 'templates.periodModal.name');
+const anchorDate = atom(startOfToday(), 'templates.periodModal.anchor');
+const dateRange = atom<[string | null, string | null]>(
+  [null, null],
+  'templates.periodModal.range'
 );
 
-export const AddPeriodPicker = reatomComponent(() => {
-  const activePeriods = templatePeriods();
-  const availablePeriods = PERIOD_ORDER.filter((period) => !activePeriods.includes(period));
+/** Диапазон дней (1-based от даты выхода), выведенный из выбранных дат */
+const selectedDayRange = computed(() => {
+  const [from, to] = dateRange();
 
-  if (availablePeriods.length === 0) return null;
+  if (!from || !to) return undefined;
 
-  const weeks = availablePeriods.filter((period) => getPeriodMeta(period).group === 'week');
-  const months = availablePeriods.filter((period) => getPeriodMeta(period).group === 'month');
+  const anchor = anchorDate();
+  const startDay = dateToDayNumber(anchor, parseLocalDate(from));
+  const endDay = dateToDayNumber(anchor, parseLocalDate(to));
+
+  if (startDay < 1 || endDay < startDay) return undefined;
+
+  return { startDay, endDay };
+}, 'templates.periodModal.dayRange');
+
+export const openPeriodModal = action(() => {
+  periodName.set('');
+  anchorDate.set(startOfToday());
+  dateRange.set([null, null]);
+  modalOpened.setTrue();
+}, 'templates.openPeriodModal');
+
+const applyPreset = action((preset: PeriodPreset) => {
+  const anchor = anchorDate();
+
+  periodName.set(preset.name);
+  dateRange.set([
+    toDateString(dayNumberToDate(anchor, preset.startDay)),
+    toDateString(dayNumberToDate(anchor, preset.endDay))
+  ]);
+}, 'templates.periodModal.applyPreset');
+
+const submitPeriod = action(() => {
+  const range = selectedDayRange();
+  const name = periodName().trim();
+
+  if (!name || !range) return;
+
+  // при дубликате имени модалка остаётся открытой — ввод не теряется
+  if (addPeriod({ name, startDay: range.startDay, endDay: range.endDay })) {
+    modalOpened.setFalse();
+  }
+}, 'templates.periodModal.submit');
+
+// ── UI ────────────────────────────────────────────────────────────────────
+
+const MONTH_PRESETS = [1, 2, 3].map(monthPreset);
+const WEEK_PRESETS = [1, 2, 3, 4].map(weekPreset);
+
+const PresetChips = reatomComponent(
+  ({ presets }: { presets: PeriodPreset[] }) => (
+    <div className={classes.chips}>
+      {presets.map((preset) => (
+        <Button
+          key={preset.name}
+          radius='xl'
+          size='compact-xs'
+          variant='outline'
+          onClick={() => applyPreset(preset)}
+        >
+          {preset.name}
+        </Button>
+      ))}
+    </div>
+  ),
+  'PresetChips'
+);
+
+const PeriodModal = reatomComponent(() => {
+  const range = selectedDayRange();
 
   return (
-    <Popover
-      withArrow
-      opened={pickerOpened()}
-      position='bottom-start'
-      shadow='md'
-      width={260}
-      onDismiss={() => pickerOpened.setFalse()}
+    <Modal
+      opened={modalOpened()}
+      size='auto'
+      title='Новый период'
+      onClose={() => modalOpened.setFalse()}
     >
-      <Popover.Target>
-        <Button
-          leftSection={<IconPlus size={14} />}
-          size='xs'
-          variant='default'
-          onClick={() => pickerOpened.toggle()}
-        >
-          Добавить период
-        </Button>
-      </Popover.Target>
-      <Popover.Dropdown>
-        {weeks.length > 0 && (
-          <>
-            <Text c='dimmed' fw={700} fz={10} mb={4} tt='uppercase'>
-              Недели
+      <Stack gap='sm'>
+        <TextInput
+          data-autofocus
+          label='Название периода'
+          placeholder='Например, «Первая неделя»'
+          value={periodName()}
+          onChange={(event) => periodName.set(event.currentTarget.value)}
+        />
+
+        <div>
+          <Text fw={500} fz='sm' mb={4}>
+            Быстрый выбор
+          </Text>
+          <Group align='flex-start' gap='lg'>
+            <div>
+              <Text c='dimmed' fw={700} fz={10} mb={4} tt='uppercase'>
+                Месяцы работы
+              </Text>
+              <PresetChips presets={MONTH_PRESETS} />
+            </div>
+            <div>
+              <Text c='dimmed' fw={700} fz={10} mb={4} tt='uppercase'>
+                Недели работы
+              </Text>
+              <PresetChips presets={WEEK_PRESETS} />
+            </div>
+          </Group>
+        </div>
+
+        <div>
+          <Text fw={500} fz='sm' mb={4}>
+            Диапазон дат{' '}
+            <Text span c='dimmed' fz='xs'>
+              (отсчёт от даты выхода сотрудника — день 1)
             </Text>
-            <PeriodChips periods={weeks} />
-          </>
-        )}
-        {months.length > 0 && (
-          <>
-            <Text c='dimmed' fw={700} fz={10} mb={4} mt={weeks.length > 0 ? 'sm' : 0} tt='uppercase'>
-              Месяцы
+          </Text>
+          <DatePicker
+            defaultDate={anchorDate()}
+            minDate={anchorDate()}
+            numberOfColumns={2}
+            type='range'
+            value={dateRange()}
+            onChange={(value) => dateRange.set(value)}
+          />
+        </div>
+
+        <Group justify='space-between'>
+          {range ? (
+            <Badge size='lg' variant='light'>
+              {formatDayRange(range)} · {periodDurationDays(range)} дн.
+            </Badge>
+          ) : (
+            <Text c='dimmed' fz='sm'>
+              Выберите начало и конец периода
             </Text>
-            <PeriodChips periods={months} />
-          </>
-        )}
-      </Popover.Dropdown>
-    </Popover>
+          )}
+          <Group gap='xs'>
+            <Button variant='default' onClick={() => modalOpened.setFalse()}>
+              Отмена
+            </Button>
+            <Button
+              disabled={!range || !periodName().trim()}
+              leftSection={<IconCalendarPlus size={16} />}
+              loading={!!saveTemplateStructure.pending()}
+              onClick={() => submitPeriod()}
+            >
+              Добавить период
+            </Button>
+          </Group>
+        </Group>
+      </Stack>
+    </Modal>
   );
-}, 'AddPeriodPicker');
+}, 'PeriodModal');
+
+export const AddPeriodPicker = reatomComponent(
+  () => (
+    <>
+      <Button
+        leftSection={<IconPlus size={14} />}
+        size='xs'
+        variant='default'
+        onClick={() => openPeriodModal()}
+      >
+        Добавить период
+      </Button>
+      <PeriodModal />
+    </>
+  ),
+  'AddPeriodPicker'
+);

@@ -162,13 +162,31 @@ export type ResetUserPasswordResponseDto = {
     temporaryPassword: string;
 };
 
+export type OnboardingTemplatePeriodResponseDto = {
+    id: string;
+    name: string;
+    /**
+     * День начала периода от даты выхода сотрудника (день 1)
+     */
+    startDay: number;
+    /**
+     * День конца периода включительно
+     */
+    endDay: number;
+    createdAt: string;
+    updatedAt: string;
+};
+
 export type OnboardingTemplateTaskResponseDto = {
     id: string;
     title: string;
     description: {
         [key: string]: unknown;
     } | null;
-    period: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    /**
+     * Ссылка на период шаблона из массива periods
+     */
+    periodId: string;
     sortOrder: number;
     createdAt: string;
     updatedAt: string;
@@ -190,13 +208,32 @@ export type OnboardingTemplateResponseDto = {
     createdBy: string;
     createdAt: string;
     updatedAt: string;
+    /**
+     * Отсортированы по дню начала, затем по дню конца
+     */
+    periods: Array<OnboardingTemplatePeriodResponseDto>;
     tasks: Array<OnboardingTemplateTaskResponseDto>;
+};
+
+export type TemplatePeriodDto = {
+    name: string;
+    /**
+     * День начала периода, отсчёт от даты выхода (день 1)
+     */
+    startDay: number;
+    /**
+     * День конца периода включительно
+     */
+    endDay: number;
 };
 
 export type TemplateTaskDto = {
     title: string;
     description?: string;
-    period: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    /**
+     * Название периода из массива periods этого же запроса
+     */
+    periodName: string;
     sortOrder: number;
 };
 
@@ -207,7 +244,11 @@ export type CreateOnboardingTemplateDto = {
     positionId?: string;
     isActive?: boolean;
     /**
-     * Может быть пустым: шаблон создаётся каркасом, задачи добавляются позже
+     * Может быть пустым: шаблон создаётся каркасом, периоды добавляются позже
+     */
+    periods: Array<TemplatePeriodDto>;
+    /**
+     * Каждая задача ссылается на период по periodName из массива periods
      */
     tasks: Array<TemplateTaskDto>;
 };
@@ -219,7 +260,11 @@ export type UpdateOnboardingTemplateDto = {
     positionId?: string;
     isActive?: boolean;
     /**
-     * Может быть пустым: шаблон создаётся каркасом, задачи добавляются позже
+     * Может быть пустым: шаблон создаётся каркасом, периоды добавляются позже
+     */
+    periods?: Array<TemplatePeriodDto>;
+    /**
+     * Каждая задача ссылается на период по periodName из массива periods
      */
     tasks?: Array<TemplateTaskDto>;
 };
@@ -233,7 +278,18 @@ export type OnboardingPlanTaskResponseDto = {
     description: {
         [key: string]: unknown;
     } | null;
-    period: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    /**
+     * Название периода — снапшот на момент создания задачи
+     */
+    periodName: string;
+    /**
+     * День начала окна периода от даты выхода (день 1)
+     */
+    periodStartDay: number;
+    /**
+     * День конца окна периода включительно
+     */
+    periodEndDay: number;
     status: 'not_started' | 'in_progress' | 'completed';
     sortOrder: number;
     completedAt: {
@@ -267,7 +323,15 @@ export type OnboardingPlanResponseDto = {
 export type PlanTaskDto = {
     title: string;
     description?: string;
-    period: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    periodName: string;
+    /**
+     * День начала окна периода от даты выхода (день 1)
+     */
+    periodStartDay: number;
+    /**
+     * День конца окна периода включительно
+     */
+    periodEndDay: number;
     sortOrder: number;
 };
 
@@ -286,8 +350,10 @@ export type OnboardingPlanCalendarEventResponseDto = {
     description: {
         [key: string]: unknown;
     } | null;
-    period: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
-    periodLabel: string;
+    /**
+     * Название периода — снапшот из задачи плана
+     */
+    periodName: string;
     status: 'not_started' | 'in_progress' | 'completed';
     sortOrder: number;
     scheduledStartDate: string;
@@ -334,7 +400,15 @@ export type UpdateOnboardingPlanDto = {
 export type CreateOnboardingPlanTaskDto = {
     title: string;
     description?: string;
-    period: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    periodName: string;
+    /**
+     * День начала окна периода от даты выхода (день 1)
+     */
+    periodStartDay: number;
+    /**
+     * День конца окна периода включительно
+     */
+    periodEndDay: number;
     /**
      * Не указан — задача добавляется в конец периода
      */
@@ -345,7 +419,9 @@ export type UpdateOnboardingPlanTaskDto = {
     status?: 'not_started' | 'in_progress' | 'completed';
     title?: string;
     description?: string;
-    period?: 'week_1' | 'week_2' | 'week_3' | 'week_4' | 'week_5' | 'week_6' | 'week_7' | 'week_8' | 'week_9' | 'week_10' | 'week_11' | 'week_12' | 'month_1' | 'month_2' | 'month_3';
+    periodName?: string;
+    periodStartDay?: number;
+    periodEndDay?: number;
     sortOrder?: number;
 };
 

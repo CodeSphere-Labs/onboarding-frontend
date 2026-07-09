@@ -1,7 +1,7 @@
 import { Badge, Group, Paper, SimpleGrid, Text } from '@mantine/core';
 import { reatomComponent } from '@reatom/react';
 
-import { getPeriodMeta } from '../../../Templates/periods';
+import { formatGoalPeriodLabel } from '../../../Templates/periods';
 import { managerDashboard } from '../../model';
 import {
   ActivityFeed,
@@ -75,7 +75,7 @@ export const ManagerView = reatomComponent(() => {
         {data.lists.employeesGoals.map((goal) => {
           const statusMeta = GOAL_STATUS_META[goal.status];
           const periodLabel = goal.period.includes('_')
-            ? getPeriodMeta(goal.period as Parameters<typeof getPeriodMeta>[0]).label
+            ? formatGoalPeriodLabel(goal.period)
             : goal.period;
 
           return (

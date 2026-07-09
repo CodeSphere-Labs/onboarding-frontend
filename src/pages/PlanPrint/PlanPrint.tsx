@@ -15,7 +15,7 @@ import {
   summarizeTasks,
   viewedEmployeeName
 } from '../Plan/model';
-import { getPeriodMeta } from '../Templates/periods';
+import { formatDayRange } from '../Templates/periods';
 
 import classes from './planPrint.module.css';
 
@@ -126,16 +126,16 @@ export const PlanPrint = reatomComponent(() => {
       </section>
 
       {periods.map((period) => {
-        const meta = getPeriodMeta(period);
-        const tasks = tasksByPeriod.get(period) ?? [];
+        const tasks = tasksByPeriod.get(period.name) ?? [];
         const periodProgress = summarizeTasks(tasks);
 
         return (
-          <section key={period} className={classes.period}>
+          <section key={period.name} className={classes.period}>
             <div className={classes.periodHeader}>
-              <span className={classes.periodName}>{meta.label}</span>
+              <span className={classes.periodName}>{period.name}</span>
               <span className={classes.periodMeta}>
-                {meta.range} · выполнено {periodProgress.completed}/{periodProgress.total}
+                {formatDayRange(period)} · выполнено {periodProgress.completed}/
+                {periodProgress.total}
               </span>
             </div>
             <ul className={classes.tasks}>

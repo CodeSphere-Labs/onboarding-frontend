@@ -24,7 +24,7 @@ import {
 import { router } from '@/app/router';
 import { user } from '@/app/user.model';
 
-import { getPeriodMeta } from '../Templates/periods';
+import { getPeriodColor } from '../Templates/periods';
 import { AchievementsTab } from './components/AchievementsTab/AchievementsTab';
 import { CreatePlanModal } from './components/CreatePlanModal/CreatePlanModal';
 import { EmployeePicker } from './components/EmployeePicker/EmployeePicker';
@@ -166,15 +166,19 @@ const PlanSidebar = reatomComponent(() => {
           По периодам
         </Text>
         {planPeriods().map((period) => {
-          const meta = getPeriodMeta(period);
-          const periodProgress = summarizeTasks(tasksByPeriod.get(period) ?? []);
+          const periodProgress = summarizeTasks(tasksByPeriod.get(period.name) ?? []);
 
           return (
-            <Group key={period} gap='xs' mb={6} wrap='nowrap'>
+            <Group key={period.name} gap='xs' mb={6} wrap='nowrap'>
               <Text fz='xs' w={72}>
-                {meta.label}
+                {period.name}
               </Text>
-              <Progress color={meta.color} flex={1} size='sm' value={periodProgress.percent} />
+              <Progress
+                color={getPeriodColor(period)}
+                flex={1}
+                size='sm'
+                value={periodProgress.percent}
+              />
               <Text c='dimmed' fz='xs' ta='right' w={34}>
                 {periodProgress.percent}%
               </Text>

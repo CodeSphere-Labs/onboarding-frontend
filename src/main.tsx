@@ -21,6 +21,7 @@ import { user } from './app/user.model.ts';
 import './shared/api/session';
 
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
 
 // 401 на бутстрапе — ожидаемый кейс «не залогинен». Без onResponseFailure

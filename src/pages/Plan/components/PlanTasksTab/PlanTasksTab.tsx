@@ -28,10 +28,9 @@ import {
 import { useState } from 'react';
 
 // TODO(OSS-16): периоды переедут в shared при выделении страниц целей/достижений
-import type { OnboardingPeriod } from '../../../Templates/periods';
-import type { TaskStatus } from '../../model';
+import type { PlanPeriod, TaskStatus } from '../../model';
 
-import { getPeriodMeta } from '../../../Templates/periods';
+import { formatDayRange, getPeriodColor } from '../../../Templates/periods';
 import {
   addPlanTask,
   asText,
@@ -77,7 +76,7 @@ const TaskStatusControl = reatomComponent(
   'TaskStatusControl'
 );
 
-const AddTaskRow = reatomComponent(({ period }: { period: OnboardingPeriod }) => {
+const AddTaskRow = reatomComponent(({ period }: { period: PlanPeriod }) => {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
 
@@ -235,28 +234,28 @@ export const PlanTasksTab = reatomComponent(() => {
   return (
     <>
       {periods.map((period) => {
-        const meta = getPeriodMeta(period);
-        const tasks = tasksByPeriod.get(period) ?? [];
+        const color = getPeriodColor(period);
+        const tasks = tasksByPeriod.get(period.name) ?? [];
         const progress = summarizeTasks(tasks);
 
         return (
-          <Paper withBorder key={period} mb='md' radius='md' style={{ overflow: 'hidden' }}>
+          <Paper withBorder key={period.name} mb='md' radius='md' style={{ overflow: 'hidden' }}>
             <Group gap={10} p='sm' wrap='nowrap'>
-              <ThemeIcon color={meta.color} radius='md' size={30} variant='light'>
+              <ThemeIcon color={color} radius='md' size={30} variant='light'>
                 <IconCalendar size={16} />
               </ThemeIcon>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Text fw={700} fz={13}>
-                  {meta.label}
+                  {period.name}
                 </Text>
                 <Text c='dimmed' fz={11}>
-                  {meta.range}
+                  {formatDayRange(period)}
                 </Text>
               </div>
               <Text c='dimmed' fz={12}>
                 {progress.completed}/{progress.total} · {progress.percent}%
               </Text>
-              <Progress color={meta.color} size='sm' value={progress.percent} w={120} />
+              <Progress color={color} size='sm' value={progress.percent} w={120} />
             </Group>
             <div>
               {tasks.map((task) => (

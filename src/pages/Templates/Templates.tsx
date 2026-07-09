@@ -40,7 +40,7 @@ import {
   templatePeriods,
   templatesList
 } from './model';
-import { getPeriodMeta } from './periods';
+import { getPeriodColor } from './periods';
 
 import classes from './templates.module.css';
 
@@ -54,7 +54,7 @@ const pluralizePeriods = (count: number) => {
 const TemplateListItem = reatomComponent(
   ({ template }: { template: OnboardingTemplateResponseDto }) => {
     const meta = getDepartmentMeta(templateDepartmentName(template, departmentNameById()));
-    const periodsCount = new Set(template.tasks.map((task) => task.period)).size;
+    const periodsCount = template.periods.length;
 
     return (
       <button
@@ -186,19 +186,19 @@ const TemplateDetail = reatomComponent(() => {
         {periods.length > 0 && (
           <Group gap={6} mb='lg'>
             {periods.map((period) => {
-              const periodMeta = getPeriodMeta(period);
-              const count = periodTasks.get(period)?.length ?? 0;
+              const color = getPeriodColor(period);
+              const count = periodTasks.get(period.id)?.length ?? 0;
 
               return (
                 <div
-                  key={period}
+                  key={period.id}
                   className={classes.periodCard}
-                  style={{ borderTopColor: `var(--mantine-color-${periodMeta.color}-6)` }}
+                  style={{ borderTopColor: `var(--mantine-color-${color}-6)` }}
                 >
                   <Text c='dimmed' fz={11}>
-                    {periodMeta.label}
+                    {period.name}
                   </Text>
-                  <Text c={`${periodMeta.color}.6`} fw={700} fz={18} lh={1}>
+                  <Text c={`${color}.6`} fw={700} fz={18} lh={1}>
                     {count}
                   </Text>
                   <Text c='dimmed' fz={10}>
@@ -224,7 +224,7 @@ const TemplateDetail = reatomComponent(() => {
         )}
 
         {periods.map((period) => (
-          <PeriodSection key={period} period={period} tasks={periodTasks.get(period) ?? []} />
+          <PeriodSection key={period.id} period={period} tasks={periodTasks.get(period.id) ?? []} />
         ))}
 
         {periods.length > 0 && <AddPeriodPicker />}
