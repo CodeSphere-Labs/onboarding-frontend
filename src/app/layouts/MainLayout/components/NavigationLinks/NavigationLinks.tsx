@@ -25,10 +25,10 @@ export const NavigationLinks = reatomComponent(({ routes }: { routes: Navigation
             key={item.routeKey}
             className={classes.link}
             data-active={route.exact() || undefined}
-            href={route.path()}
+            href={route.path({})}
             onClick={(event) => {
               event.preventDefault();
-              route.go();
+              route.go({});
             }}
           >
             <item.icon className={classes.linkIcon} stroke={1.5} />

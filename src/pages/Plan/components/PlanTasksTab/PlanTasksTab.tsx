@@ -43,6 +43,7 @@ import {
   planTasksByPeriod,
   summarizeTasks
 } from '../../model';
+import { AddPlanPeriodButton } from '../AddPlanPeriodModal/AddPlanPeriodModal';
 
 import classes from './planTasksTab.module.css';
 
@@ -233,6 +234,12 @@ export const PlanTasksTab = reatomComponent(() => {
 
   return (
     <>
+      {canEdit && (
+        <Group justify='flex-end' mb='sm'>
+          <AddPlanPeriodButton />
+        </Group>
+      )}
+
       {periods.map((period) => {
         const color = getPeriodColor(period);
         const tasks = tasksByPeriod.get(period.name) ?? [];
@@ -269,7 +276,7 @@ export const PlanTasksTab = reatomComponent(() => {
 
       {periods.length === 0 && (
         <Text c='dimmed' fz='sm' py='xl' ta='center'>
-          В плане пока нет задач
+          В плане пока нет задач{canEdit && ' — добавьте период с первой задачей'}
         </Text>
       )}
 

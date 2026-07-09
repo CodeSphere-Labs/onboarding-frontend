@@ -169,10 +169,25 @@ export const candidatesRoute = authenticatedRoute.reatomRoute(
   'candidatesRoute'
 );
 
+/**
+ * Шэрабельная ссылка на план конкретного сотрудника: /plan/:employeeId.
+ * Без параметра — свой план (сотрудник) или выбор через селектор (HR/менеджер).
+ */
 export const planRoute = authenticatedRoute.reatomRoute(
   {
-    path: 'plan',
-    params: roleGuard(['hr', 'manager', 'employee']),
+    path: 'plan/:employeeId?',
+    // ключ типизирован обязательным (string | undefined): констрейнт PathKeys
+    // у reatomRoute требует наличия ключа, иначе вывод типов падает в any
+    params(params: {
+      employeeId: string | undefined;
+    }): { employeeId: string | undefined } | null {
+      // '/plan/print' принадлежит печатной версии (planPrintRoute под rootRoute)
+      if (params.employeeId === 'print') return null;
+
+      if (!roleGuard(['hr', 'manager', 'employee'])()) return null;
+
+      return { employeeId: params.employeeId };
+    },
     render: () => <Plan />
   },
   'planRoute'

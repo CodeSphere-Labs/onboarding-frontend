@@ -15,11 +15,9 @@ import {
 import { reatomComponent } from '@reatom/react';
 import { IconListCheck } from '@tabler/icons-react';
 
-import { router } from '@/app/router';
-
 import type { PlanStatusFilter } from './model';
 
-import { asText, viewedEmployeeId } from '../Plan/model';
+import { asText, openEmployeePlan } from '../Plan/model';
 import {
   departmentNameById,
   fullName,
@@ -57,10 +55,7 @@ const PlanRow = reatomComponent(({ plan }: { plan: OnboardingPlanResponseDto }) 
   return (
     <Table.Tr
       className={classes.row}
-      onClick={() => {
-        viewedEmployeeId.set(plan.employeeId);
-        router.plan.go();
-      }}
+      onClick={() => openEmployeePlan(plan.employeeId)}
     >
       <Table.Td>
         <Group gap='xs' wrap='nowrap'>

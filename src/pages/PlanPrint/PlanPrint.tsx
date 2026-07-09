@@ -9,6 +9,7 @@ import { user } from '@/app/user.model';
 import {
   planData,
   planDayInfo,
+  planEmployeeId,
   planPeriods,
   planProgress,
   planTasksByPeriod,
@@ -49,7 +50,7 @@ export const PlanPrint = reatomComponent(() => {
     return (
       <div className={classes.page}>
         <p>План не выбран. Откройте страницу «План» и выберите сотрудника.</p>
-        <Button variant='default' onClick={() => router.plan.go()}>
+        <Button variant='default' onClick={() => router.plan.go({ employeeId: undefined })}>
           К странице плана
         </Button>
       </div>
@@ -70,7 +71,7 @@ export const PlanPrint = reatomComponent(() => {
           leftSection={<IconArrowLeft size={14} />}
           size='xs'
           variant='default'
-          onClick={() => router.plan.go()}
+          onClick={() => router.plan.go({ employeeId: planEmployeeId() })}
         >
           Назад к плану
         </Button>

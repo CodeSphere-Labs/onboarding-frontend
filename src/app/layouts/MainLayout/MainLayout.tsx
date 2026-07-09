@@ -38,7 +38,7 @@ export const MainLayout = reatomComponent<Props>(
               aria-label='Настройки'
               color='gray'
               variant='subtle'
-              onClick={() => navigationRoutes.settings.go()}
+              onClick={() => navigationRoutes.settings.go({})}
             >
               <IconSettings size={18} stroke={1.5} />
             </ActionIcon>
