@@ -104,28 +104,27 @@ export const PeriodSection = reatomComponent<Props>(({ period, tasks }) => {
 
   return (
     <div className={classes.block}>
-      <button
-        className={classes.header}
-        data-open={open || undefined}
-        type='button'
-        onClick={() => setOpen((value) => !value)}
-      >
-        <ThemeIcon color={color} radius='md' size={30} variant='light'>
-          <PeriodIcon size={16} />
-        </ThemeIcon>
-        <span className={classes.headerName}>{period.name}</span>
-        <Text c='dimmed' fz={11} mr={6}>
-          {tasks.length} задач · {formatDayRange(period)}
-        </Text>
+      <div className={classes.header} data-open={open || undefined}>
+        <button
+          aria-expanded={open}
+          className={classes.headerToggle}
+          type='button'
+          onClick={() => setOpen((value) => !value)}
+        >
+          <ThemeIcon color={color} radius='md' size={30} variant='light'>
+            <PeriodIcon size={16} />
+          </ThemeIcon>
+          <span className={classes.headerName}>{period.name}</span>
+          <Text c='dimmed' fz={11} mr={6}>
+            {tasks.length} задач · {formatDayRange(period)}
+          </Text>
+        </button>
         <ActionIcon
           aria-label='Удалить период'
           color='red'
-          component='span'
           size='sm'
           variant='subtle'
-          onClick={(event) => {
-            event.stopPropagation();
-
+          onClick={() => {
             if (tasks.length === 0) {
               removePeriod(period);
             } else {
@@ -136,7 +135,7 @@ export const PeriodSection = reatomComponent<Props>(({ period, tasks }) => {
           <IconX size={13} />
         </ActionIcon>
         <IconChevronDown className={classes.chevron} size={14} />
-      </button>
+      </div>
 
       {confirmRemove && (
         <Alert color='red' icon={<IconAlertTriangle size={16} />} radius={0}>
