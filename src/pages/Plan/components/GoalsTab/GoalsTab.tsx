@@ -16,7 +16,7 @@ import {
 import { bindField, reatomComponent } from '@reatom/react';
 import { IconPencil, IconPlus, IconTargetArrow } from '@tabler/icons-react';
 
-import { getPeriodMeta } from '../../../Templates/periods';
+import { formatGoalPeriodLabel } from '../../../Templates/periods';
 import {
   asText,
   editingGoal,
@@ -39,7 +39,7 @@ const GOAL_STATUS_OPTIONS = Object.entries(GOAL_STATUS_META).map(([value, meta])
 
 const PERIOD_OPTIONS = GOAL_PERIODS.map((period) => ({
   value: period,
-  label: getPeriodMeta(period).label
+  label: formatGoalPeriodLabel(period)
 }));
 
 const GoalModal = reatomComponent(() => {
@@ -143,7 +143,7 @@ export const GoalsTab = reatomComponent(() => {
                 )}
               </div>
               <Badge color='gray' size='sm' variant='light'>
-                {getPeriodMeta(goal.period).label}
+                {formatGoalPeriodLabel(goal.period)}
               </Badge>
               <Badge color={statusMeta.color} size='sm' variant='light'>
                 {statusMeta.label}

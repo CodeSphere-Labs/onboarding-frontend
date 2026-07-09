@@ -7,7 +7,7 @@ import { IconCircle, IconCircleCheck, IconSpy } from '@tabler/icons-react';
 import { router } from '@/app/router';
 import { user } from '@/app/user.model';
 
-import { getPeriodMeta } from '../../../Templates/periods';
+import { formatGoalPeriodLabel } from '../../../Templates/periods';
 import { employeeDashboard } from '../../model';
 import { SectionTitle, StatsGrid } from '../shared/SharedBlocks';
 
@@ -20,9 +20,7 @@ const GOAL_STATUS_META = {
 } as const;
 
 const periodLabel = (period: string) =>
-  period.includes('_')
-    ? getPeriodMeta(period as Parameters<typeof getPeriodMeta>[0]).label
-    : period;
+  period.includes('_') ? formatGoalPeriodLabel(period) : period;
 
 const TaskRow = ({ task }: { task: DashboardTaskItemDto }) => {
   const done = task.status === 'completed';

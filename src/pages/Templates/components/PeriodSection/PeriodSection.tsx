@@ -1,4 +1,7 @@
-import type { OnboardingTemplateTaskResponseDto } from '@api';
+import type {
+  OnboardingTemplatePeriodResponseDto,
+  OnboardingTemplateTaskResponseDto
+} from '@api';
 
 import { ActionIcon, Alert, Button, Group, Text, TextInput, ThemeIcon } from '@mantine/core';
 import { reatomComponent } from '@reatom/react';
@@ -15,26 +18,31 @@ import {
 } from '@tabler/icons-react';
 import { useState } from 'react';
 
-import type { OnboardingPeriod } from '../../periods';
-
-import { addTask, asText, deleteTask, editingTask, removePeriod, saveTemplateTasks } from '../../model';
-import { getPeriodMeta } from '../../periods';
+import {
+  addTask,
+  asText,
+  deleteTask,
+  editingTask,
+  removePeriod,
+  saveTemplateStructure
+} from '../../model';
+import { formatDayRange, getPeriodColor, periodDurationDays } from '../../periods';
 
 import classes from './periodSection.module.css';
 
-const getPeriodIcon = (period: OnboardingPeriod) => {
-  if (period === 'week_1') return IconRocket;
-  if (period === 'month_3') return IconFlag;
+const getPeriodIcon = (period: OnboardingTemplatePeriodResponseDto) => {
+  if (period.startDay === 1 && periodDurationDays(period) <= 7) return IconRocket;
+  if (period.endDay >= 61) return IconFlag;
 
   return IconCalendar;
 };
 
-const AddTaskRow = reatomComponent(({ period }: { period: OnboardingPeriod }) => {
+const AddTaskRow = reatomComponent(({ periodName }: { periodName: string }) => {
   const [adding, setAdding] = useState(false);
   const [title, setTitle] = useState('');
 
   const confirmAdd = () => {
-    if (title.trim()) addTask(period, title);
+    if (title.trim()) addTask(periodName, title);
     setTitle('');
     setAdding(false);
   };
@@ -65,7 +73,7 @@ const AddTaskRow = reatomComponent(({ period }: { period: OnboardingPeriod }) =>
           }
         }}
       />
-      <Button loading={!!saveTemplateTasks.pending()} size='compact-sm' onClick={confirmAdd}>
+      <Button loading={!!saveTemplateStructure.pending()} size='compact-sm' onClick={confirmAdd}>
         Добавить
       </Button>
       <Button
@@ -83,7 +91,7 @@ const AddTaskRow = reatomComponent(({ period }: { period: OnboardingPeriod }) =>
 }, 'AddTaskRow');
 
 interface Props {
-  period: OnboardingPeriod;
+  period: OnboardingTemplatePeriodResponseDto;
   tasks: OnboardingTemplateTaskResponseDto[];
 }
 
@@ -91,7 +99,7 @@ export const PeriodSection = reatomComponent<Props>(({ period, tasks }) => {
   const [open, setOpen] = useState(true);
   const [confirmRemove, setConfirmRemove] = useState(false);
 
-  const meta = getPeriodMeta(period);
+  const color = getPeriodColor(period);
   const PeriodIcon = getPeriodIcon(period);
 
   return (
@@ -102,12 +110,12 @@ export const PeriodSection = reatomComponent<Props>(({ period, tasks }) => {
         type='button'
         onClick={() => setOpen((value) => !value)}
       >
-        <ThemeIcon color={meta.color} radius='md' size={30} variant='light'>
+        <ThemeIcon color={color} radius='md' size={30} variant='light'>
           <PeriodIcon size={16} />
         </ThemeIcon>
-        <span className={classes.headerName}>{meta.label}</span>
+        <span className={classes.headerName}>{period.name}</span>
         <Text c='dimmed' fz={11} mr={6}>
-          {tasks.length} задач · {meta.range}
+          {tasks.length} задач · {formatDayRange(period)}
         </Text>
         <ActionIcon
           aria-label='Удалить период'
@@ -163,7 +171,7 @@ export const PeriodSection = reatomComponent<Props>(({ period, tasks }) => {
               <div key={task.id} className={classes.taskRow}>
                 <div
                   className={classes.taskDot}
-                  style={{ backgroundColor: `var(--mantine-color-${meta.color}-6)` }}
+                  style={{ backgroundColor: `var(--mantine-color-${color}-6)` }}
                 />
                 <div className={classes.taskBody}>
                   <Text fw={500} fz={13} lh={1.4}>
@@ -198,7 +206,7 @@ export const PeriodSection = reatomComponent<Props>(({ period, tasks }) => {
               </div>
             );
           })}
-          <AddTaskRow period={period} />
+          <AddTaskRow periodName={period.name} />
         </div>
       )}
     </div>

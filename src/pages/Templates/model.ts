@@ -1,6 +1,8 @@
 import type {
+  OnboardingTemplatePeriodResponseDto,
   OnboardingTemplateResponseDto,
   OnboardingTemplateTaskResponseDto,
+  TemplatePeriodDto,
   TemplateTaskDto
 } from '@api';
 
@@ -26,9 +28,7 @@ import { z } from 'zod';
 
 import { getApiError, getErrorCodeMessage } from '@/shared/api/errorCodes';
 
-import type { OnboardingPeriod } from './periods';
-
-import { getPeriodMeta, sortPeriods } from './periods';
+import { sortPeriodRanges } from './periods';
 
 /** В сгенерированных DTO nullable-поля типизированы как объект — приводим к строке */
 export const asText = (value: unknown) => (typeof value === 'string' ? value : undefined);
@@ -36,7 +36,7 @@ export const asText = (value: unknown) => (typeof value === 'string' ? value : u
 /** Задача в форме, пригодной для PATCH-тела (sortOrder проставляется при сохранении) */
 interface TemplateTaskInput {
   description?: string;
-  period: OnboardingPeriod;
+  periodName: string;
   title: string;
 }
 
@@ -50,21 +50,34 @@ const showApiError = (error: unknown) => {
   });
 };
 
-const toTaskInputs = (tasks: OnboardingTemplateTaskResponseDto[]): TemplateTaskInput[] =>
-  tasks.map((task) => ({
+const toPeriodInputs = (
+  periods: OnboardingTemplatePeriodResponseDto[]
+): TemplatePeriodDto[] =>
+  periods.map((period) => ({
+    name: period.name,
+    startDay: period.startDay,
+    endDay: period.endDay
+  }));
+
+/** Задачи ссылаются на периоды по имени — разворачиваем periodId в periodName */
+const toTaskInputs = (template: OnboardingTemplateResponseDto): TemplateTaskInput[] => {
+  const periodNameById = new Map(template.periods.map((period) => [period.id, period.name]));
+
+  return template.tasks.map((task) => ({
     title: task.title,
     description: asText(task.description),
-    period: task.period
+    periodName: periodNameById.get(task.periodId) ?? ''
   }));
+};
 
 /** Бэкенд требует уникальный sortOrder внутри периода — нумеруем по порядку следования */
 const withSortOrder = (tasks: TemplateTaskInput[]): TemplateTaskDto[] => {
-  const counters = new Map<OnboardingPeriod, number>();
+  const counters = new Map<string, number>();
 
   return tasks.map((task) => {
-    const nextOrder = (counters.get(task.period) ?? 0) + 1;
+    const nextOrder = (counters.get(task.periodName) ?? 0) + 1;
 
-    counters.set(task.period, nextOrder);
+    counters.set(task.periodName, nextOrder);
 
     return { ...task, sortOrder: nextOrder };
   });
@@ -145,42 +158,35 @@ export const selectedTemplate = computed(
   'templates.selected'
 );
 
-/**
- * Периодов как сущности на бэке нет — они выводятся из задач. Пустые периоды,
- * добавленные через «Добавить период», живут только в UI, пока в них не появится задача.
- */
-const extraPeriods = atom<Record<string, OnboardingPeriod[]>>({}, 'templates.extraPeriods');
-
+/** Периоды — сущности шаблона (могут быть пустыми, без задач) */
 export const templatePeriods = computed(() => {
   const template = selectedTemplate();
 
   if (!template) return [];
 
-  const periodsFromTasks = template.tasks.map((task) => task.period);
-  const uiOnlyPeriods = extraPeriods()[template.id] ?? [];
-
-  return sortPeriods([...new Set([...periodsFromTasks, ...uiOnlyPeriods])]);
+  return sortPeriodRanges([...template.periods]);
 }, 'templates.periods');
 
 export const tasksByPeriod = computed(() => {
   const template = selectedTemplate();
-  const map = new Map<OnboardingPeriod, OnboardingTemplateTaskResponseDto[]>();
+  const map = new Map<string, OnboardingTemplateTaskResponseDto[]>();
 
   for (const task of template?.tasks ?? []) {
-    const periodTasks = map.get(task.period) ?? [];
+    const periodTasks = map.get(task.periodId) ?? [];
 
     periodTasks.push(task);
-    map.set(task.period, periodTasks);
+    map.set(task.periodId, periodTasks);
   }
 
   return map;
 }, 'templates.tasksByPeriod');
 
-// ── Мутации задач ─────────────────────────────────────────────────────────
+// ── Мутации структуры (периоды + задачи заменяются только парой) ──────────
 
-export const saveTemplateTasks = action(
+export const saveTemplateStructure = action(
   async (
     template: OnboardingTemplateResponseDto,
+    nextPeriods: TemplatePeriodDto[],
     nextTasks: TemplateTaskInput[],
     successMessage?: string
   ) => {
@@ -188,7 +194,7 @@ export const saveTemplateTasks = action(
       await wrap(
         patchApiOnboardingTemplateById({
           path: { id: template.id },
-          body: { tasks: withSortOrder(nextTasks) }
+          body: { periods: nextPeriods, tasks: withSortOrder(nextTasks) }
         })
       );
 
@@ -201,16 +207,19 @@ export const saveTemplateTasks = action(
       showApiError(error);
     }
   },
-  'templates.saveTasks'
+  'templates.saveStructure'
 ).extend(withAsync());
 
-export const addTask = action((period: OnboardingPeriod, title: string) => {
+export const addTask = action((periodName: string, title: string) => {
   const template = selectedTemplate();
   const trimmedTitle = title.trim();
 
   if (!template || !trimmedTitle) return;
 
-  saveTemplateTasks(template, [...toTaskInputs(template.tasks), { title: trimmedTitle, period }]);
+  saveTemplateStructure(template, toPeriodInputs(template.periods), [
+    ...toTaskInputs(template),
+    { title: trimmedTitle, periodName }
+  ]);
 }, 'templates.addTask');
 
 export const deleteTask = action((taskId: string) => {
@@ -218,9 +227,18 @@ export const deleteTask = action((taskId: string) => {
 
   if (!template) return;
 
-  saveTemplateTasks(
+  const periodNameById = new Map(template.periods.map((period) => [period.id, period.name]));
+
+  saveTemplateStructure(
     template,
-    toTaskInputs(template.tasks.filter((task) => task.id !== taskId)),
+    toPeriodInputs(template.periods),
+    template.tasks
+      .filter((task) => task.id !== taskId)
+      .map((task) => ({
+        title: task.title,
+        description: asText(task.description),
+        periodName: periodNameById.get(task.periodId) ?? ''
+      })),
     'Задача удалена'
   );
 }, 'templates.deleteTask');
@@ -254,17 +272,24 @@ export const taskForm = computed(() => {
 
         if (!template) return;
 
-        const nextTasks = toTaskInputs(template.tasks).map((input, index) =>
+        const nextTasks = toTaskInputs(template).map((input, index) =>
           template.tasks[index].id === task.id
             ? {
                 title: state.title.trim(),
                 description: state.description.trim() || undefined,
-                period: input.period
+                periodName: input.periodName
               }
             : input
         );
 
-        await wrap(saveTemplateTasks(template, nextTasks, 'Задача обновлена'));
+        await wrap(
+          saveTemplateStructure(
+            template,
+            toPeriodInputs(template.periods),
+            nextTasks,
+            'Задача обновлена'
+          )
+        );
         editingTask.set(undefined);
       }
     }
@@ -273,38 +298,55 @@ export const taskForm = computed(() => {
 
 // ── Периоды ───────────────────────────────────────────────────────────────
 
-export const addPeriod = action((period: OnboardingPeriod) => {
+/** Возвращает false, если период не добавлен (например, имя дублируется) */
+export const addPeriod = action((period: TemplatePeriodDto) => {
   const template = selectedTemplate();
+  const name = period.name.trim();
 
-  if (!template) return;
+  if (!template || !name) return false;
 
-  extraPeriods.set((prev) => ({
-    ...prev,
-    [template.id]: [...(prev[template.id] ?? []), period]
-  }));
-  notifications.show({
-    message: `Период «${getPeriodMeta(period).label}» добавлен`,
-    color: 'green'
-  });
+  const isDuplicate = template.periods.some(
+    (existing) => existing.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (isDuplicate) {
+    notifications.show({
+      message: `Период «${name}» уже есть в шаблоне`,
+      color: 'red'
+    });
+
+    return false;
+  }
+
+  saveTemplateStructure(
+    template,
+    [...toPeriodInputs(template.periods), { ...period, name }],
+    toTaskInputs(template),
+    `Период «${name}» добавлен`
+  );
+
+  return true;
 }, 'templates.addPeriod');
 
-export const removePeriod = action((period: OnboardingPeriod) => {
+export const removePeriod = action((period: OnboardingTemplatePeriodResponseDto) => {
   const template = selectedTemplate();
 
   if (!template) return;
 
-  extraPeriods.set((prev) => ({
-    ...prev,
-    [template.id]: (prev[template.id] ?? []).filter((item) => item !== period)
-  }));
+  const periodNameById = new Map(template.periods.map((item) => [item.id, item.name]));
 
-  const remainingTasks = template.tasks.filter((task) => task.period !== period);
-
-  if (remainingTasks.length !== template.tasks.length) {
-    saveTemplateTasks(template, toTaskInputs(remainingTasks), 'Период удалён');
-  } else {
-    notifications.show({ message: 'Период удалён', color: 'gray' });
-  }
+  saveTemplateStructure(
+    template,
+    toPeriodInputs(template.periods.filter((item) => item.id !== period.id)),
+    template.tasks
+      .filter((task) => task.periodId !== period.id)
+      .map((task) => ({
+        title: task.title,
+        description: asText(task.description),
+        periodName: periodNameById.get(task.periodId) ?? ''
+      })),
+    'Период удалён'
+  );
 }, 'templates.removePeriod');
 
 // ── Создание и дублирование шаблона ───────────────────────────────────────
@@ -332,6 +374,7 @@ export const createTemplateForm = reatomForm(
               name: state.name.trim(),
               ...(state.description.trim() && { description: state.description.trim() }),
               ...(state.departmentId && { departmentId: state.departmentId }),
+              periods: [],
               tasks: []
             }
           })
@@ -380,7 +423,8 @@ export const duplicateTemplate = action(async () => {
           description: asText(template.description),
           departmentId: asText(template.departmentId),
           positionId: asText(template.positionId),
-          tasks: withSortOrder(toTaskInputs(template.tasks))
+          periods: toPeriodInputs(template.periods),
+          tasks: withSortOrder(toTaskInputs(template))
         }
       })
     );
