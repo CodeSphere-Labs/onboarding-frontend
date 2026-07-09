@@ -1,12 +1,12 @@
 import { Badge, Button, Group, Modal, Stack, Text, TextInput } from '@mantine/core';
 import { DatePicker } from '@mantine/dates';
-import { action, atom, computed, reatomBoolean } from '@reatom/core';
+import { notifications } from '@mantine/notifications';
+import { action, atom, computed, reatomBoolean, wrap } from '@reatom/core';
 import { reatomComponent } from '@reatom/react';
 import { IconCalendarPlus, IconPlus } from '@tabler/icons-react';
 
-import type { PeriodPreset } from '../../periods';
+import type { PeriodPreset } from '../../../Templates/periods';
 
-import { addPeriod, saveTemplateStructure } from '../../model';
 import {
   dateToDayNumber,
   dayNumberToDate,
@@ -17,19 +17,20 @@ import {
   startOfLocalDay,
   toLocalDateString,
   weekPreset
-} from '../../periods';
+} from '../../../Templates/periods';
+import { addPlanTask, planData, planPeriods } from '../../model';
 
-import classes from './addPeriodPicker.module.css';
+/**
+ * Периоды плана существуют только через задачи (снапшот на задаче),
+ * поэтому новый период создаётся сразу с первой задачей.
+ * Якорь календаря — дата выхода сотрудника (plan.startsAt) = «день 1».
+ */
 
-// ── Состояние модалки ─────────────────────────────────────────────────────
-
-const modalOpened = reatomBoolean(false, 'templates.periodModalOpened');
-const periodName = atom('', 'templates.periodModal.name');
-const anchorDate = atom(startOfLocalDay(), 'templates.periodModal.anchor');
-const dateRange = atom<[string | null, string | null]>(
-  [null, null],
-  'templates.periodModal.range'
-);
+const modalOpened = reatomBoolean(false, 'plan.periodModalOpened');
+const periodName = atom('', 'plan.periodModal.name');
+const firstTaskTitle = atom('', 'plan.periodModal.firstTaskTitle');
+const anchorDate = atom(startOfLocalDay(), 'plan.periodModal.anchor');
+const dateRange = atom<[string | null, string | null]>([null, null], 'plan.periodModal.range');
 
 /** Диапазон дней (1-based от даты выхода), выведенный из выбранных дат */
 const selectedDayRange = computed(() => {
@@ -44,14 +45,17 @@ const selectedDayRange = computed(() => {
   if (startDay < 1 || endDay < startDay) return undefined;
 
   return { startDay, endDay };
-}, 'templates.periodModal.dayRange');
+}, 'plan.periodModal.dayRange');
 
-export const openPeriodModal = action(() => {
+const openPlanPeriodModal = action(() => {
+  const plan = planData.data();
+
   periodName.set('');
-  anchorDate.set(startOfLocalDay());
+  firstTaskTitle.set('');
+  anchorDate.set(plan ? parseLocalDate(plan.startsAt) : startOfLocalDay());
   dateRange.set([null, null]);
   modalOpened.setTrue();
-}, 'templates.openPeriodModal');
+}, 'plan.openPeriodModal');
 
 const applyPreset = action((preset: PeriodPreset) => {
   const anchor = anchorDate();
@@ -61,19 +65,31 @@ const applyPreset = action((preset: PeriodPreset) => {
     toLocalDateString(dayNumberToDate(anchor, preset.startDay)),
     toLocalDateString(dayNumberToDate(anchor, preset.endDay))
   ]);
-}, 'templates.periodModal.applyPreset');
+}, 'plan.periodModal.applyPreset');
 
-const submitPeriod = action(() => {
+const submitPlanPeriod = action(async () => {
   const range = selectedDayRange();
   const name = periodName().trim();
+  const taskTitle = firstTaskTitle().trim();
 
-  if (!name || !range) return;
+  if (!name || !range || !taskTitle) return;
 
-  // при дубликате имени модалка остаётся открытой — ввод не теряется
-  if (addPeriod({ name, startDay: range.startDay, endDay: range.endDay })) {
-    modalOpened.setFalse();
+  const isDuplicate = planPeriods().some(
+    (existing) => existing.name.toLowerCase() === name.toLowerCase()
+  );
+
+  if (isDuplicate) {
+    // модалка остаётся открытой — ввод не теряется
+    notifications.show({ message: `Период «${name}» уже есть в плане`, color: 'red' });
+
+    return;
   }
-}, 'templates.periodModal.submit');
+
+  await wrap(
+    addPlanTask({ name, startDay: range.startDay, endDay: range.endDay }, taskTitle)
+  );
+  modalOpened.setFalse();
+}, 'plan.periodModal.submit');
 
 // ── UI ────────────────────────────────────────────────────────────────────
 
@@ -82,7 +98,7 @@ const WEEK_PRESETS = [1, 2, 3, 4].map(weekPreset);
 
 const PresetChips = reatomComponent(
   ({ presets }: { presets: PeriodPreset[] }) => (
-    <div className={classes.chips}>
+    <Group gap={4}>
       {presets.map((preset) => (
         <Button
           key={preset.name}
@@ -94,26 +110,27 @@ const PresetChips = reatomComponent(
           {preset.name}
         </Button>
       ))}
-    </div>
+    </Group>
   ),
-  'PresetChips'
+  'PlanPresetChips'
 );
 
-const PeriodModal = reatomComponent(() => {
+const PlanPeriodModal = reatomComponent(() => {
   const range = selectedDayRange();
+  const canSubmit = !!range && !!periodName().trim() && !!firstTaskTitle().trim();
 
   return (
     <Modal
       opened={modalOpened()}
       size='auto'
-      title='Новый период'
+      title='Новый период плана'
       onClose={() => modalOpened.setFalse()}
     >
       <Stack gap='sm'>
         <TextInput
           data-autofocus
           label='Название периода'
-          placeholder='Например, «Первая неделя»'
+          placeholder='Например, «Погружение в проект»'
           value={periodName()}
           onChange={(event) => periodName.set(event.currentTarget.value)}
         />
@@ -155,6 +172,13 @@ const PeriodModal = reatomComponent(() => {
           />
         </div>
 
+        <TextInput
+          label='Первая задача периода'
+          placeholder='Например, «Встреча с командой проекта»'
+          value={firstTaskTitle()}
+          onChange={(event) => firstTaskTitle.set(event.currentTarget.value)}
+        />
+
         <Group justify='space-between'>
           {range ? (
             <Badge size='lg' variant='light'>
@@ -170,10 +194,10 @@ const PeriodModal = reatomComponent(() => {
               Отмена
             </Button>
             <Button
-              disabled={!range || !periodName().trim()}
+              disabled={!canSubmit}
               leftSection={<IconCalendarPlus size={16} />}
-              loading={!!saveTemplateStructure.pending()}
-              onClick={() => submitPeriod()}
+              loading={!!addPlanTask.pending()}
+              onClick={() => submitPlanPeriod()}
             >
               Добавить период
             </Button>
@@ -182,21 +206,21 @@ const PeriodModal = reatomComponent(() => {
       </Stack>
     </Modal>
   );
-}, 'PeriodModal');
+}, 'PlanPeriodModal');
 
-export const AddPeriodPicker = reatomComponent(
+export const AddPlanPeriodButton = reatomComponent(
   () => (
     <>
       <Button
         leftSection={<IconPlus size={14} />}
         size='xs'
         variant='default'
-        onClick={() => openPeriodModal()}
+        onClick={() => openPlanPeriodModal()}
       >
         Добавить период
       </Button>
-      <PeriodModal />
+      <PlanPeriodModal />
     </>
   ),
-  'AddPeriodPicker'
+  'AddPlanPeriodButton'
 );

@@ -14,9 +14,7 @@ import {
   IconTrophy
 } from '@tabler/icons-react';
 
-import { router } from '@/app/router';
-
-import { viewedEmployeeId } from '../../../Plan/model';
+import { openEmployeePlan } from '../../../Plan/model';
 
 export interface StatCardItem {
   color?: string;
@@ -121,10 +119,7 @@ export const PersonProgressList = reatomComponent(
           mb='sm'
           style={{ cursor: 'pointer' }}
           wrap='nowrap'
-          onClick={() => {
-            viewedEmployeeId.set(item.employeeId);
-            router.plan.go();
-          }}
+          onClick={() => openEmployeePlan(item.employeeId)}
         >
           <Avatar color='initials' name={item.displayName} size={32} />
           <div style={{ flex: 1, minWidth: 0 }}>

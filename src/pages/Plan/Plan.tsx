@@ -14,6 +14,7 @@ import { reatomComponent } from '@reatom/react';
 import {
   IconChecklist,
   IconClipboardOff,
+  IconMessageCircle,
   IconPlus,
   IconPrinter,
   IconTargetArrow,
@@ -28,6 +29,7 @@ import { getPeriodColor } from '../Templates/periods';
 import { AchievementsTab } from './components/AchievementsTab/AchievementsTab';
 import { CreatePlanModal } from './components/CreatePlanModal/CreatePlanModal';
 import { EmployeePicker } from './components/EmployeePicker/EmployeePicker';
+import { FeedbackTab } from './components/FeedbackTab/FeedbackTab';
 import { GoalsTab } from './components/GoalsTab/GoalsTab';
 import { PlanTasksTab } from './components/PlanTasksTab/PlanTasksTab';
 import {
@@ -42,6 +44,7 @@ import {
   planTasksByPeriod,
   summarizeTasks,
   templatesForPlan,
+  viewedEmployeeId,
   viewedEmployeeName
 } from './model';
 
@@ -113,7 +116,12 @@ const PlanHeader = reatomComponent(() => {
             leftSection={<IconPrinter size={14} />}
             size='xs'
             variant='default'
-            onClick={() => router.planPrint.go()}
+            onClick={() => {
+              // печатная версия читает viewedEmployeeId — синхронизируем
+              // на случай, если план открыт по шэрабельной ссылке /plan/:id
+              viewedEmployeeId.set(planEmployeeId());
+              router.planPrint.go();
+            }}
           >
             Печать
           </Button>
@@ -293,6 +301,9 @@ export const Plan = reatomComponent(() => {
                       <Tabs.Tab leftSection={<IconTrophy size={15} />} value='achievements'>
                         Достижения
                       </Tabs.Tab>
+                      <Tabs.Tab leftSection={<IconMessageCircle size={15} />} value='feedback'>
+                        Фидбек
+                      </Tabs.Tab>
                     </Tabs.List>
                     <Tabs.Panel value='tasks'>
                       <PlanTasksTab />
@@ -302,6 +313,9 @@ export const Plan = reatomComponent(() => {
                     </Tabs.Panel>
                     <Tabs.Panel value='achievements'>
                       <AchievementsTab />
+                    </Tabs.Panel>
+                    <Tabs.Panel value='feedback'>
+                      <FeedbackTab />
                     </Tabs.Panel>
                   </Tabs>
                 </div>

@@ -56,6 +56,35 @@ export const weekPreset = (weekNumber: number): PeriodPreset => ({
   endDay: weekNumber * 7
 });
 
+// ── Пересчёт «номер дня ↔ календарная дата» для модалок с DatePicker ──────
+// Якорь — «день 1» (дата выхода сотрудника или сегодня для шаблонов).
+
+export const startOfLocalDay = (date = new Date()) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+/** Календарная арифметика (не мс): устойчиво к переходам на летнее/зимнее время */
+export const dayNumberToDate = (anchor: Date, dayNumber: number) =>
+  new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() + dayNumber - 1);
+
+/** Mantine DatePicker отдаёт строки YYYY-MM-DD — парсим в локальной TZ, как и якорь */
+export const parseLocalDate = (value: string) => {
+  const [year, month, day] = value.split('-').map(Number);
+
+  return new Date(year, month - 1, day);
+};
+
+export const toLocalDateString = (date: Date) => {
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+
+  return `${date.getFullYear()}-${month}-${day}`;
+};
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export const dateToDayNumber = (anchor: Date, date: Date) =>
+  Math.round((date.getTime() - anchor.getTime()) / DAY_MS) + 1;
+
 /**
  * Человекочитаемое название enum-периода целей (month_1..month_3).
  * Периоды целей остались enum'ом — в отличие от периодов шаблонов/планов.

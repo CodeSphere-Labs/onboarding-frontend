@@ -1,5 +1,6 @@
 import type {
   AchievementResponseDto,
+  FeedbackResponseDto,
   GoalResponseDto,
   OnboardingPlanTaskResponseDto
 } from '@api';
@@ -9,6 +10,7 @@ import {
   deleteApiOnboardingPlanByIdTaskByTaskId,
   getApiAchievements,
   getApiDashboard,
+  getApiFeedback,
   getApiGoals,
   getApiOnboardingPlansEmployeeByEmployeeId,
   getApiOnboardingTemplates,
@@ -35,6 +37,7 @@ import {
 } from '@reatom/core';
 import { z } from 'zod';
 
+import { router } from '@/app/router';
 import { user } from '@/app/user.model';
 import { getApiError, getErrorCodeMessage } from '@/shared/api/errorCodes';
 
@@ -76,8 +79,22 @@ export const planEmployeeId = computed(() => {
 
   if (!currentUser) return undefined;
 
-  return currentUser.role === 'employee' ? currentUser.id : viewedEmployeeId();
+  if (currentUser.role === 'employee') return currentUser.id;
+
+  // На /plan/:employeeId параметр URL главнее — так работают шэрабельные ссылки
+  const routeEmployeeId = router.plan()?.employeeId;
+
+  return routeEmployeeId ?? viewedEmployeeId();
 }, 'plan.employeeId');
+
+/**
+ * Открыть план сотрудника: URL становится шэрабельным (/plan/:employeeId),
+ * а выбор синхронизируется для страниц Цели/Достижения/Welcome-пакет.
+ */
+export const openEmployeePlan = action((employeeId: string | undefined) => {
+  viewedEmployeeId.set(employeeId);
+  router.plan.go({ employeeId });
+}, 'plan.openEmployeePlan');
 
 export interface EmployeeOption {
   id: string;
@@ -640,6 +657,24 @@ export const confirmAchievement = action(
   },
   'plan.confirmAchievement'
 ).extend(withAsync());
+
+// ── Фидбек сотрудника ─────────────────────────────────────────────────────
+
+/** Анонимный фидбек, полученный сотрудником; видимость по ролям решает бэкенд */
+export const planFeedback = computed(async () => {
+  const employeeId = planEmployeeId();
+
+  if (!employeeId) return [] as FeedbackResponseDto[];
+
+  const response = await wrap(
+    getApiFeedback({
+      query: { recipientId: employeeId, limit: 100 },
+      config: { signal: abortVar.require().signal }
+    })
+  );
+
+  return response.data.items;
+}, 'plan.feedback').extend(withAsyncData({ initState: [] }));
 
 // ── Информация о сотруднике для шапки (данные зависят от роли) ────────────
 

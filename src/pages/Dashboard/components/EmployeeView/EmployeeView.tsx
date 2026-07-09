@@ -114,7 +114,7 @@ export const EmployeeView = reatomComponent(() => {
               c='blue.6'
               fz='xs'
               style={{ cursor: 'pointer' }}
-              onClick={() => router.plan.go()}
+              onClick={() => router.plan.go({ employeeId: undefined })}
             >
               Полный план →
             </Text>

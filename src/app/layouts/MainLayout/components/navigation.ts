@@ -18,10 +18,14 @@ import {
 
 import type { UserRole } from '@/shared/components';
 
+/**
+ * any вынужден: у plan/:employeeId? go/path требуют объект с ключом employeeId,
+ * а у остальных роутов params пустые — общего структурного типа нет.
+ */
 export interface NavigationRoute {
   exact: () => boolean;
-  go: () => unknown;
-  path: () => string;
+  go: (params: any) => unknown;
+  path: (params: any) => string;
 }
 
 export interface NavigationRoutes {

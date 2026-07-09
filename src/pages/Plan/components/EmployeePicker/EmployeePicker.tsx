@@ -2,9 +2,10 @@ import { Select, Text } from '@mantine/core';
 import { reatomComponent } from '@reatom/react';
 import { IconUserSearch } from '@tabler/icons-react';
 
+import { router } from '@/app/router';
 import { user } from '@/app/user.model';
 
-import { employeeOptions, planEmployeeId, viewedEmployeeId } from '../../model';
+import { employeeOptions, openEmployeePlan, planEmployeeId, viewedEmployeeId } from '../../model';
 
 /** Селектор сотрудника для менеджера/HR; сотрудник всегда смотрит свои данные */
 export const EmployeePicker = reatomComponent(() => {
@@ -17,9 +18,16 @@ export const EmployeePicker = reatomComponent(() => {
       searchable
       data={employeeOptions.data().map((option) => ({ value: option.id, label: option.name }))}
       placeholder='Выберите сотрудника'
-      value={viewedEmployeeId() ?? null}
+      value={planEmployeeId() ?? null}
       w={260}
-      onChange={(value) => viewedEmployeeId.set(value ?? undefined)}
+      onChange={(value) => {
+        // на странице плана выбор попадает в URL (/plan/:employeeId) — ссылку можно шэрить
+        if (router.plan.match()) {
+          openEmployeePlan(value ?? undefined);
+        } else {
+          viewedEmployeeId.set(value ?? undefined);
+        }
+      }}
     />
   );
 }, 'EmployeePicker');

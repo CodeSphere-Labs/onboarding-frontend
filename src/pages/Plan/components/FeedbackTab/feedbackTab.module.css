@@ -1,0 +1,20 @@
+.strengths {
+  padding: 10px 12px;
+
+  color: light-dark(var(--mantine-color-green-9), var(--mantine-color-green-1));
+
+  background-color: light-dark(var(--mantine-color-green-0), rgb(64 192 87 / 10%));
+
+  border-radius: var(--mantine-radius-md);
+}
+
+.improvements {
+  margin-top: 8px;
+  padding: 10px 12px;
+
+  color: light-dark(var(--mantine-color-orange-9), var(--mantine-color-orange-1));
+
+  background-color: light-dark(var(--mantine-color-orange-0), rgb(253 126 20 / 10%));
+
+  border-radius: var(--mantine-radius-md);
+}
